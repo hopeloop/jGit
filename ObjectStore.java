@@ -1,20 +1,21 @@
 import java.io.*;
 
-public class KeyValueStore {
-    protected String path;
+public abstract class ObjectStore {
+    protected String path;//存储位置
+    protected String resourcePath;
     private String key;  //object的key值
     private String type; //object的类型
     private String name;
 
     //如果用户没有指定存储位置，则在根目录下新建两层文件夹jGit/object，用于存储object
-    KeyValueStore() {
+    protected ObjectStore() {
         File file = new File("jGit/object");
         file.mkdirs();
         path = "./jGit/object";
     }
 
     //也可使用用户指定的存储地点
-    KeyValueStore(String user_assigned_path) {
+    protected ObjectStore(String user_assigned_path) {
         path = user_assigned_path;
     }
 
@@ -100,4 +101,6 @@ public class KeyValueStore {
     public String getName() {
         return name;
     }
+
+
 }

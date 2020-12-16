@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.security.MessageDigest;
 
@@ -14,7 +15,6 @@ public class Hash {
     Hash(File file) throws Exception {
         Hashcode = SHA1Checksum(file);
     }
-
 
     //获取源文件hash值
     private static String SHA1Checksum(File file) throws Exception {
