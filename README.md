@@ -102,5 +102,53 @@
 - 提示：
   1. 需要存储指向当前最新commit的HEAD指针
   2. 每次新生成一个commit前，需要把根目录的tree key与已有的最新commit的	 tree key进行比较，发现不相同时（即文件发生了变动）才添加这个commit
+------
 
- 
+## 实现：
+
+### 类：
+
+#### **1.ObjectStore**
+
+
+#### **2.Hash**
+
+
+#### **3.Blob**
+
+
+#### **4.Tree**
+
+
+#### **5.Commit**
+
+   - 想法：
+      1. value包括根目录对应的Tree对象的key，前驱Commit对象的key，commit时间戳和注释。
+  		2. 要构建commit链条，需要有一个文件（Head）存储指向最新commit的Head指针(最新commit的key)。
+  		3. 生成新commit前，先判断文件是否变动，即根目录tree key是否改变。
+          变动了才能成功生成新的commit，并将新产生的commit key覆盖Head中原有内容。
+      4. 以上三点可以写成3个方法解决。
+
+   
+   - 主要方法：
+
+		1. isCommitable: 判断Head文件是否存在，存在则取出保存在其中的commit key（lastCommitKey），进而取出上一次的tree key。
+    调用Tree方法对工作区根目录（除jGit文件夹外）生成新的treekey (latestTreeKey)。比较两个tree key是否相同。
+  		2. createCommit：生成新Commit的Value,并写入文件。
+  		3. updateHead：如果Head文件不存在，则在jGit文件夹生成HEAD文件，如果已存在，将新生成的commit key存入（覆盖）。
+
+     
+    -msg:String
+    -timeStamp:String
+    -lastTreeKey:String
+    -latestTreeKey:String
+    -lastCommitKey:String
+    -latestCommitKey:String
+    
+    Commit()
+    -doTimeStamp():void 生成时间戳
+    -updateHead():void 更新Head,如果没有则创建
+    -isCommitable：boolean 判断是否能Commit
+    -createCommit:void 
+
+​	
