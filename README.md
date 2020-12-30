@@ -52,11 +52,11 @@
 - Commit对象的value包含：
 
 1.  项目根目录对应的Tree对象的key
-2.  前驱Commit对象的key
-3.  代码author
-4.  代码commiter
-5.  commit时间戳
-6.  commit备注/注释
+2. 前驱Commit对象的key
+3. 代码author
+4. 代码commiter
+5. commit时间戳
+6. commit备注/注释
 
 ### 查看所有object
 
@@ -65,6 +65,33 @@
 ### 查看对应key的value
 
 -  git cat-file –p <key>
+
+### 分支切换与回滚
+
+- 本质：把commit对应的根目录Tree对象恢复成一个文件夹
+
+- 要切换到一个已存在的分支，需要使用 git checkout 命令
+
+- ```java
+  git checkout master
+  这条命令做了两件事。 一是使 HEAD 指回 master 分支，二是将工作目录恢复成 master 分支所指向的快照内容。
+  ```
+
+- 注意：在切换分支时，一定要注意你工作目录里的文件会被改变。 如果是切换到一个较旧的分支，你的工作目录会恢复到该分支最后一次提交时的样子。 如果 Git 不能干净利落地完成这个任务，它将禁止切换分支
+
+### 分支管理
+
+- Git 的分支，其实本质上仅仅是指向提交对象的可变指针。 Git 的默认分支名字是 master。 在多次提交操作之后，你其实已经有一个指向最后那个提交对象的 master分支。 master分支会在每次提交时自动向前移动。
+- 保存分支信息
+  1. 确定有哪些分支
+  2. 每个分支最新的commit值
+  3. 当前处于哪个分支
+
+- 命令：
+  1. 新建分支—git branch，git checkout
+  2. 合并分支—git merge
+  3. 删除分支—git branch -d dev(分支名)
+  4. 切换分支—git checkout dev
 
 ## 每周任务
 
@@ -82,7 +109,7 @@
 - 给定一个文件夹目录，将其转化成若干tree和blob
 - 深度优先遍历此目录
   1.  遇到子文件就转化成blob并保存
-  2.  遇到子文件夹就递归调用其内部的子文件/文件夹最后构造tree并保存
+  2. 遇到子文件夹就递归调用其内部的子文件/文件夹最后构造tree并保存
 
 - 使用任务1提供的接口 --- hash表
 - 单元测试
@@ -91,7 +118,7 @@
 
 #### Task1: 完善、优化已有的代码
 
-- 最终小组内每位同学都需要贡献至少3次commit，可以是完善注释、设计文档和单元	 测试（使用代码来自动化实现测试用例的生成以及验证测试结果是否正确）
+- 最终小组内每位同学都需要贡献至少3次commit，可以是完善注释、设计文档和单元测试（使用代码来自动化实现测试用例的生成以及验证测试结果是否正确）
 
 #### Task2: 实现commit
 
@@ -102,53 +129,29 @@
 - 提示：
   1. 需要存储指向当前最新commit的HEAD指针
   2. 每次新生成一个commit前，需要把根目录的tree key与已有的最新commit的	 tree key进行比较，发现不相同时（即文件发生了变动）才添加这个commit
-------
 
-## 实现：
+### 12月23日——12月30日 第三周任务 
 
-### 类：
+#### Task1: 分支管理与切换
 
-#### **1.ObjectStore**
+- 创建一个名为branch的文件夹，文件夹中记录各个branch的信息
+- 每新建一个分支，在branch文件夹中增加一个以该分支名命名的文件，将最新commit的值写入对应的分支文件中
+- 找到branch文件夹中要切换到的分支对应的文件，读出其中最新的commit的key
+- 把commit对应的根目录tree对象恢复成文件夹
+- 修改HEAD的值为最新的commit的key
 
+#### Task2: 回滚
 
-#### **2.Hash**
+- 根据commit key查询得到commit的value
+- 从commit value中解析得到根目录tree的key
+- 恢复(path)：
+  1. 根据tree的key查询得到value
+  2. 解析value中的每一条记录，即这个tree对象所代表的文件夹内的子文件与子文件夹名称以及对应的blob/tree key
+  3. 对于blob，在path中创建文件，命名为相应的文件名，写入blob的value
+  4. 对于tree，在path中创建文件夹，命名为相应的文件夹名，递归调用恢复(path+文件夹名)
+  5. 切换分支/回滚至某个commit后，需要更新HEAD指针
 
+#### Task3: 命令行交互
 
-#### **3.Blob**
-
-
-#### **4.Tree**
-
-
-#### **5.Commit**
-
-   - 想法：
-      1. value包括根目录对应的Tree对象的key，前驱Commit对象的key，commit时间戳和注释。
-  		2. 要构建commit链条，需要有一个文件（Head）存储指向最新commit的Head指针(最新commit的key)。
-  		3. 生成新commit前，先判断文件是否变动，即根目录tree key是否改变。
-          变动了才能成功生成新的commit，并将新产生的commit key覆盖Head中原有内容。
-      4. 以上三点可以写成3个方法解决。
-
-   
-   - 主要方法：
-
-		1. isCommitable: 判断Head文件是否存在，存在则取出保存在其中的commit key（lastCommitKey），进而取出上一次的tree key。
-    调用Tree方法对工作区根目录（除jGit文件夹外）生成新的treekey (latestTreeKey)。比较两个tree key是否相同。
-  		2. createCommit：生成新Commit的Value,并写入文件。
-  		3. updateHead：如果Head文件不存在，则在jGit文件夹生成HEAD文件，如果已存在，将新生成的commit key存入（覆盖）。
-
-     
-    -msg:String
-    -timeStamp:String
-    -lastTreeKey:String
-    -latestTreeKey:String
-    -lastCommitKey:String
-    -latestCommitKey:String
-    
-    Commit()
-    -doTimeStamp():void 生成时间戳
-    -updateHead():void 更新Head,如果没有则创建
-    -isCommitable：boolean 判断是否能Commit
-    -createCommit:void 
-
-​	
+- Scanner接收用户指令
+- 通过main函数命令行参数String[] args接收用户指令
