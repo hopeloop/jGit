@@ -7,6 +7,8 @@ public class TestJGit {
             jGit.init();
             // 测试add操作
             wareHouse.add("");
+            // 测试rollBack操作
+            wareHouse.rollBack();
         } catch (Exception e) {
             e.printStackTrace();
         }

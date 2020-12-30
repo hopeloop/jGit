@@ -3,9 +3,11 @@ import java.io.File;
 public class jGit {
     // 待管理项目的路径
     public static String repoPath;
+    public String currBranch;
 
     public jGit(String repoPath) {
         this.repoPath = repoPath;
+        this.currBranch = "master";
     }
 
     // 初始化仓库
@@ -28,5 +30,9 @@ public class jGit {
 
     public static void commit() throws Exception {
 
+    }
+
+    public void rollBack() throws Exception {
+        new RollBack(repoPath, currBranch);
     }
 }
