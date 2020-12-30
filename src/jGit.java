@@ -11,8 +11,11 @@ public class jGit {
     // 初始化仓库
     public static void init() throws Exception {
         File wareHouse = new File(repoPath + File.separator + "jGit");
-        if (!wareHouse.exists())
-            wareHouse.mkdir();
+        if (!wareHouse.exists()) {
+            wareHouse.mkdirs();
+            File refHouse = new File(repoPath + File.separator + "refs" + File.separator + "heads");
+            refHouse.mkdirs();
+        }
     }
 
     // add操作，入参是相对路径
