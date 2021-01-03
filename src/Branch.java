@@ -6,7 +6,7 @@ public class Branch {
     private String lastCommitId; // 应该回滚到的commit的id
     private ObjectStore objStore; // 用该对象调用getValue()
 
-    public Branch(String repoPath, String currBranch) throws Exception {
+    public Branch(String repoPath, String currBranch) {
         this.repoPath = repoPath;
         this.headPath = repoPath + File.separator + "refs" + File.separator + "heads" + File.separator + currBranch;
         objStore = new ObjectStore(repoPath);
@@ -14,9 +14,9 @@ public class Branch {
 
     // 生成一个新分支(不自动切换到该分支)，入参为新分支名称
     public boolean newBranch(String branchName) throws Exception {
-        File branchRec = new File(repoPath + File.separator + "refs" + File.separator + "heads" + File.separator + branchName);
+        File branchRec = new File(repoPath + File.separator + "jGit" + File.separator + "refs" + File.separator + "heads" + File.separator + branchName);
         if (branchRec.exists()) {
-            System.out.println("Branch already exists!");
+            System.out.println("Branch '" + branchName + "' already exists!");
             return false;
         }
         branchRec.createNewFile(); // 在heads文件夹下新建文件保存分支的HEAD

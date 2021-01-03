@@ -1,13 +1,12 @@
 import java.io.File;
 
 public class jGit {
-    // 待管理项目的路径
-    public static String repoPath;
-    public String currBranch;
+    public static String repoPath; // 待管理项目的路径
+    public static Branch branch; // 分支对象
 
     public jGit(String repoPath) {
         this.repoPath = repoPath;
-        this.currBranch = "master";
+        branch = new Branch(repoPath, "master"); // 初始分支为master
     }
 
     // 初始化仓库
@@ -18,6 +17,7 @@ public class jGit {
             File refHouse = new File(repoPath + File.separator + "jGit" + File.separator + "refs" + File.separator + "heads");
             refHouse.mkdirs();
         }
+        branch.newBranch("master");
     }
 
     // add操作，入参是相对路径
@@ -31,6 +31,14 @@ public class jGit {
     public static void commit() throws Exception {
 
     }
+
+    public boolean newBranch(String newBranch) throws Exception {
+        return branch.newBranch(newBranch);
+    }
+
+    public boolean switchBranch(String theBranch) throws Exception {
+        return branch.switchBranch(theBranch);
+    } 
 
 //    public void rollBack() throws Exception {
 //        new RollBack(repoPath, currBranch);
