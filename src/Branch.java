@@ -4,7 +4,6 @@ public class Branch {
     private static String repoPath; // 仓库路径(绝对)
     private String currBranch; // 当前分支名
     private static String headPath; // heads文件夹路径(绝对)
-    private String lastCommitId; // 应该回滚到的commit的id
     private ObjectStore objStore; // 用该对象调用getValue()
 
     public Branch(String repoPath, String currBranch) {
@@ -30,23 +29,12 @@ public class Branch {
         return true;
     }
 
-    // 切换分支，入参为要切换到的分支名
-    public boolean switchBranch(String theBranch) {
-        File branchRec = new File(headPath + File.separator + theBranch);
-        if (!branchRec.exists()) {
-            System.out.println("Branch not found!");
-            return false;
-        }
-        this.currBranch = theBranch;
-        return true;
-    }
-
     // 显示本地所有分支
     public void showBranches() {
         File[] branches = new File(headPath).listFiles();
         for (File f : branches) {
-//            if (f.getName().equals(".DS_Store"))
-//                continue;
+            if (f.getName().equals(".DS_Store"))
+                continue;
             String name = f.getName();
             System.out.print(name);
             if (name.equals(currBranch))
@@ -56,45 +44,75 @@ public class Branch {
         }
     }
 
-    // 当前分支回滚为上一个分支
+    // 当前分支回滚为上一个提交
     public void rollBack() throws Exception {
-        if (isRollable()) { // 如果可以回滚
+        String currCommit = getCommit();
+        String lastCommit = getParent(currCommit);
+        if (!lastCommit.equals("")) { // 如果可以回滚
             clearOldFiles(); // 先清空已有文件
-            roll(); // 还原上一次commit的文件状态
-            editHead(); // 修改Head文件指向上一次commit
+            changeWareHouse(lastCommit); // 还原上一次commit的文件状态
+            editBranchHead(lastCommit); // 修改Head文件指向上一次commit
         }
     }
 
-    // 检查是否有可回滚的提交，有则记录lastCommitId
-    private boolean isRollable() throws Exception {
-        File head = new File(headPath + File.separator + currBranch);
-        // 检查当前分支是否有提交
-        if (!head.exists()) {
-            System.out.println("No commit on current branch!");
+    // 切换分支，入参为要切换到的分支名
+    public boolean switchBranch(String theBranch) throws Exception {
+        File branchRec = new File(headPath + File.separator + theBranch);
+        if (!branchRec.exists()) {
+            System.out.println("Branch not found!");
             return false;
         }
-        // 获取当前commitId
+        this.currBranch = theBranch;
+        editHEAD(theBranch); // 修改HEAD文件指向切换到的分支
+        changeWareHouse(getCommit());
+        return true;
+    }
+
+    // 获取分支最新的commitId
+    private String getCommit() throws Exception {
+        File head = new File(headPath + File.separator + currBranch);
         FileReader fr = new FileReader(head);
         BufferedReader reader = new BufferedReader(fr);
         String currCommitId = reader.readLine();
         reader.close();
         fr.close();
-        // 检查是否有前一个commit可以回滚
+        return currCommitId;
+    }
+
+    // 获得commit对应的parent
+    private String getParent(String commitId) throws Exception {
+        String currCommitId = getCommit();
+        // 若当前分支没有commit，返回
+        if (currCommitId.equals("")) {
+            System.out.println("No commit on current branch!");
+            return "";
+        }
+        // 检查是否有前一个commit
         FileReader fr2 = new FileReader(objStore.getValue(currCommitId));
         BufferedReader reader2 = new BufferedReader(fr2);
         String tempStr = null;
         while ((tempStr = reader2.readLine()) != null) {
-            if (tempStr.substring(0,6).equals("parent")) {
-                lastCommitId = tempStr.substring(7);
+            if (tempStr.startsWith("parent")) {
+                String lastCommitId = tempStr.substring(7);
                 reader2.close();
                 fr2.close();
-                return true;
+                return lastCommitId;
             }
         }
         reader2.close();
         fr2.close();
         System.out.println("No former commit to roll back!");
-        return false;
+        return "";
+    }
+
+    // 获得commit对应的tree
+    private String getTree(String commitId) throws IOException {
+        FileReader fr = new FileReader(objStore.getValue(commitId));
+        BufferedReader reader = new BufferedReader(fr);
+        String lastTreeId = reader.readLine().substring(5);
+        reader.close();
+        fr.close();
+        return lastTreeId;
     }
 
     // 清空仓库中原有文件(夹)
@@ -123,27 +141,34 @@ public class Branch {
         f.delete();
     }
 
-    // 修改Head文件指向上一次commit
-    private void editHead() throws Exception{
+    // 修改分支文件指向上一次commit
+    private void editBranchHead(String lastCommitId) throws Exception{
         BufferedWriter bw = new BufferedWriter(new FileWriter(headPath + File.separator + currBranch));
         bw.write(lastCommitId);
         bw.flush();
         bw.close();
     }
 
-    // 回滚
-    private void roll() throws Exception {
-        // 获取待回滚提交对应的tree
-        FileReader fr = new FileReader(objStore.getValue(lastCommitId));
-        BufferedReader reader = new BufferedReader(fr);
-        String lastTreeId = reader.readLine().substring(5);
-        reader.close();
-        fr.close();
+    // 修改HEAD文件指向另一个分支
+    private void editHEAD(String theBranch) throws IOException {
+        File head = new File(repoPath + File.separator + "jGit" + File.separator + "HEAD");
+        FileWriter fw = new FileWriter(head, false); // 覆盖写入HEAD
+        fw.write("ref: refs/heads/" + theBranch);
+        fw.flush();
+        fw.close();
+        if (!head.exists())
+            head.createNewFile();
+    }
+
+    // 仓库状态回到指定的commit
+    private void changeWareHouse(String commitId) throws Exception {
+        // 获得commit对应的tree
+        String lastTreeId = getTree(commitId);
         // 读取上次提交对应的tree，恢复文件(夹)
         recoverWithTree(lastTreeId);
     }
 
-    // 恢复Tree
+    // 恢复tree对应的仓库状态
     private void recoverWithTree(String treeId) throws Exception {
         FileReader fr = new FileReader(objStore.getValue(treeId));
         BufferedReader reader = new BufferedReader(fr);
