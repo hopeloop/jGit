@@ -15,7 +15,7 @@ public class jGit {
         File wareHouse = new File(repoPath + File.separator + "jGit");
         if (!wareHouse.exists()) {
             wareHouse.mkdirs();
-            File refHouse = new File(repoPath + File.separator + "refs" + File.separator + "heads");
+            File refHouse = new File(repoPath + File.separator + "jGit" + File.separator + "refs" + File.separator + "heads");
             refHouse.mkdirs();
         }
     }
@@ -32,7 +32,7 @@ public class jGit {
 
     }
 
-    public void rollBack() throws Exception {
-        new RollBack(repoPath, currBranch);
-    }
+//    public void rollBack() throws Exception {
+//        new RollBack(repoPath, currBranch);
+//    }
 }

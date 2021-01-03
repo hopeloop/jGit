@@ -1,20 +1,47 @@
 import java.io.*;
 
-public class RollBack {
+public class Branch {
     private String repoPath; // 仓库路径(绝对)
-    private String headPath; // Head文件夹路径(绝对)
+    private String headPath; // 当前分支Head文件路径(绝对)
     private String lastCommitId; // 应该回滚到的commit的id
     private ObjectStore objStore; // 用该对象调用getValue()
 
-    public RollBack(String repoPath, String currBranch) throws Exception {
+    public Branch(String repoPath, String currBranch) throws Exception {
         this.repoPath = repoPath;
-         this.headPath = repoPath + File.separator + "refs" + File.separator + "heads" + File.separator + currBranch;
-         objStore = new ObjectStore(repoPath);
-         if (isRollable()) { // 如果可以回滚
-             clearOldFiles(); // 先清空已有文件
-             roll(); // 还原上一次commit的文件状态
-             editHead(); // 修改Head文件指向上一次commit
-         }
+        this.headPath = repoPath + File.separator + "refs" + File.separator + "heads" + File.separator + currBranch;
+        objStore = new ObjectStore(repoPath);
+    }
+
+    // 生成一个新分支(不自动切换到该分支)，入参为新分支名称
+    public boolean newBranch(String branchName) throws Exception {
+        File branchRec = new File(repoPath + File.separator + "refs" + File.separator + "heads" + File.separator + branchName);
+        if (branchRec.exists()) {
+            System.out.println("Branch already exists!");
+            return false;
+        }
+        branchRec.createNewFile(); // 在heads文件夹下新建文件保存分支的HEAD
+        return true;
+    }
+
+    // 切换分支，入参为要切换到的分支名
+    public boolean switchBranch(String theBranch) {
+        String headPath = repoPath + File.separator + "refs" + File.separator + "heads" + File.separator + theBranch;
+        File branchRec = new File(headPath);
+        if (!branchRec.exists()) {
+            System.out.println("Branch not found!");
+            return false;
+        }
+        this.headPath = headPath;
+        return true;
+    }
+
+    // 当前分支回滚为上一个分支
+    public void rollBack() throws Exception {
+        if (isRollable()) { // 如果可以回滚
+            clearOldFiles(); // 先清空已有文件
+            roll(); // 还原上一次commit的文件状态
+            editHead(); // 修改Head文件指向上一次commit
+        }
     }
 
     // 检查是否有可回滚的提交，有则记录lastCommitId
