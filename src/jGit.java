@@ -55,6 +55,10 @@ public class jGit {
         return branch.switchBranch(theBranch);
     }
 
+    public void showBranches() {
+        branch.showBranches();
+    }
+
 //    public void rollBack() throws Exception {
 //        new RollBack(repoPath, currBranch);
 //    }

@@ -1,20 +1,27 @@
 import java.io.*;
 
 public class Branch {
-    private String repoPath; // 仓库路径(绝对)
-    private String headPath; // 当前分支Head文件路径(绝对)
+    private static String repoPath; // 仓库路径(绝对)
+    private String currBranch; // 当前分支名
+    private static String headPath; // heads文件夹路径(绝对)
     private String lastCommitId; // 应该回滚到的commit的id
     private ObjectStore objStore; // 用该对象调用getValue()
 
     public Branch(String repoPath, String currBranch) {
         this.repoPath = repoPath;
-        this.headPath = repoPath + File.separator + "refs" + File.separator + "heads" + File.separator + currBranch;
+        this.currBranch = currBranch;
+        this.headPath = repoPath + File.separator +"jGit" + File.separator + "refs" + File.separator + "heads";
         objStore = new ObjectStore(repoPath);
+    }
+
+    // 获得当前分支名
+    public String getBranch() {
+        return currBranch;
     }
 
     // 生成一个新分支(不自动切换到该分支)，入参为新分支名称
     public boolean newBranch(String branchName) throws Exception {
-        File branchRec = new File(repoPath + File.separator + "jGit" + File.separator + "refs" + File.separator + "heads" + File.separator + branchName);
+        File branchRec = new File(headPath + File.separator + branchName);
         if (branchRec.exists()) {
             System.out.println("Branch '" + branchName + "' already exists!");
             return false;
@@ -25,14 +32,28 @@ public class Branch {
 
     // 切换分支，入参为要切换到的分支名
     public boolean switchBranch(String theBranch) {
-        String headPath = repoPath + File.separator + "refs" + File.separator + "heads" + File.separator + theBranch;
-        File branchRec = new File(headPath);
+        File branchRec = new File(headPath + File.separator + theBranch);
         if (!branchRec.exists()) {
             System.out.println("Branch not found!");
             return false;
         }
-        this.headPath = headPath;
+        this.currBranch = theBranch;
         return true;
+    }
+
+    // 显示本地所有分支
+    public void showBranches() {
+        File[] branches = new File(headPath).listFiles();
+        for (File f : branches) {
+//            if (f.getName().equals(".DS_Store"))
+//                continue;
+            String name = f.getName();
+            System.out.print(name);
+            if (name.equals(currBranch))
+                System.out.println("*");
+            else
+                System.out.println();
+        }
     }
 
     // 当前分支回滚为上一个分支
@@ -46,7 +67,7 @@ public class Branch {
 
     // 检查是否有可回滚的提交，有则记录lastCommitId
     private boolean isRollable() throws Exception {
-        File head = new File(headPath);
+        File head = new File(headPath + File.separator + currBranch);
         // 检查当前分支是否有提交
         if (!head.exists()) {
             System.out.println("No commit on current branch!");
@@ -104,7 +125,7 @@ public class Branch {
 
     // 修改Head文件指向上一次commit
     private void editHead() throws Exception{
-        BufferedWriter bw = new BufferedWriter(new FileWriter(headPath));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(headPath + File.separator + currBranch));
         bw.write(lastCommitId);
         bw.flush();
         bw.close();
