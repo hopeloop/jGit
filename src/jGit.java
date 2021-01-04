@@ -35,16 +35,10 @@ public class jGit {
         branch.newBranch("master");
     }
 
-    // add操作，入参是相对路径
-    public void add(String addPath) throws Exception {
-        if (new File(repoPath + File.separator + addPath).isFile())
-            new Blob(repoPath, addPath);
-        else
-            new Tree(repoPath, addPath);
-    }
 
-    public static void commit() throws Exception {
-
+    public static void commit(String message) throws Exception {
+        Commit commit = new Commit(message);
+        System.out.println(commit.latestCommitKey+"\n"+commit.msg);
     }
 
     public boolean newBranch(String newBranch) throws Exception {
