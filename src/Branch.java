@@ -46,30 +46,35 @@ public class Branch {
 
     // 当前分支回滚为上一个提交
     public Boolean rollBack() throws Exception {
+        // 获得上一个commit的id
         String currCommit = getCommit();
-        System.out.println(currCommit);
         if (currCommit == null) // 当前branch没有commit
             return false;
         String lastCommit = getParent(currCommit);
         if (lastCommit == null) // 当前commit没有parent
             return false;
 
+        // 还原上一个commit的仓库状态
         clearOldFiles(); // 先清空已有文件
-//        changeWareHouse(lastCommit); // 还原上一次commit的文件状态
+        changeWareHouse(lastCommit); // 还原上一次commit的文件状态
         editBranchHead(lastCommit); // 修改Head文件指向上一次commit
         return true;
     }
 
     // 切换分支，入参为要切换到的分支名
     public boolean switchBranch(String theBranch) throws Exception {
+        // 检查要切换到的分支是否存在
         File branchRec = new File(headPath + File.separator + theBranch);
         if (!branchRec.exists()) {
-            System.out.println("Branch not found!");
+            System.out.println("Branch '" + theBranch + "' not found!");
             return false;
         }
+
+        // 修改分支相关属性
         this.currBranch = theBranch;
         editHEAD(theBranch); // 修改HEAD文件指向切换到的分支
 
+        // 切换该分支最新commit的仓库状态
         clearOldFiles(); // 先清空已有文件
         changeWareHouse(getCommit());
         return true;
@@ -147,7 +152,7 @@ public class Branch {
     private void editHEAD(String theBranch) throws IOException {
         File head = new File(repoPath + File.separator + "jGit" + File.separator + "HEAD");
         FileWriter fw = new FileWriter(head, false); // 覆盖写入HEAD
-        fw.write("ref: refs/heads/" + theBranch);
+        fw.write("ref: refs" + File.separator + "heads" + File.separator + theBranch);
         fw.flush();
         fw.close();
         if (!head.exists())
@@ -156,25 +161,39 @@ public class Branch {
 
     // 仓库状态回到指定的commit
     private void changeWareHouse(String commitId) throws Exception {
-        // 获得commit对应的tree
-        String lastTreeId = getTree(commitId);
-        // 读取上次提交对应的tree，恢复文件(夹)
-        recoverWithTree(lastTreeId);
+        String treeId = getTree(commitId); // 获得commit对应的tree
+        recoverWithTree(treeId, repoPath); // 读取上次提交对应的tree，恢复文件(夹)
     }
 
-    // 恢复tree对应的仓库状态
-    private void recoverWithTree(String treeId) throws Exception {
+    // 恢复tree对应的仓库状态，入参为tree的id和tree对应的目录路径
+    private void recoverWithTree(String treeId, String dirPath) throws Exception {
         FileReader fr = new FileReader(objStore.getValue(treeId));
         BufferedReader reader = new BufferedReader(fr);
-        String toRecover = null;
-        while ((toRecover = reader.readLine()) != null) {
-            String[] info = toRecover.split(" "); // split出来info[0]为类型，[1]为文件hash，[2]为文件(夹)名
-            if (info[0].equals("Blob")) { // 恢复blob
 
-            } else { // 恢复tree
-                recoverWithTree(toRecover.substring(5));
+        for (String toRecover = reader.readLine(); toRecover != null; ) { // 逐行读取tree文件
+            String[] info = toRecover.split(" ");               // split出来info[0]为类型，[1]为文件hash，[2]为文件(夹)名
+            if (info[0].equals("Blob")) {                           // 恢复blob
+                File blob = new File(dirPath + File.separator + info[3]);
+                File content = objStore.getValue(info[1]);
+
+                // 将content写入恢复的文件
+                FileInputStream fis = new FileInputStream(content); // 新建content的输入流
+                FileOutputStream fos = new FileOutputStream(blob);  // 新建blob的输出流
+                int len = 0;
+                byte[] buf = new byte[1024];
+                while ((len = fis.read(buf)) != -1)
+                    fos.write(buf, 0, len);
+                fis.close();
+                fos.close();
+                blob.createNewFile();
+
+            } else {                                                // 恢复tree
+                String subDirPath = dirPath + File.separator + info[2];
+                new File(subDirPath).mkdirs();                      // 创建tree对应的文件夹
+                recoverWithTree(info[1], subDirPath);
             }
         }
+
         reader.close();
         fr.close();
     }
