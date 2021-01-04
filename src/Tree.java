@@ -1,6 +1,5 @@
 public class Tree extends ObjectStore {
-    public Tree(String repoPath, String treePath) throws Exception {
-        super(repoPath);
+    public Tree(String treePath) throws Exception {
         setType("Tree");
         createFile(treePath);
     }
