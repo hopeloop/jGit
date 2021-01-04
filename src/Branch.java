@@ -18,14 +18,22 @@ public class Branch {
         return currBranch;
     }
 
-    // 生成一个新分支(不自动切换到该分支)，入参为新分支名称
+    // 生成一个新分支(不自动切换到该分支)，新分支获得和当前分支一样的commit，入参为新分支名称
     public boolean newBranch(String branchName) throws Exception {
         File newBranch = new File(headPath + File.separator + branchName);
+        // 检查是否已有目标名称的分支存在
         if (newBranch.exists()) {
-            System.out.println("Branch '" + branchName + "' already exists!");
+            System.out.println("Failed to new branch: Branch '" + branchName + "' already exists!");
             return false;
         }
-        newBranch.createNewFile(); // 在heads文件夹下新建文件保存分支的HEAD
+
+        // 将当前分支的commitId写入新分支的head文件
+        String currCommit = getCommit(); // 获得当前分支的commitId
+        FileWriter fw = new FileWriter(newBranch);
+        fw.write(currCommit);
+        fw.flush();
+        fw.close();
+        newBranch.createNewFile(); // 新建文件保存分支的head文件
         return true;
     }
 
@@ -61,27 +69,24 @@ public class Branch {
         return true;
     }
 
-    // 切换分支，入参为要切换到的分支名
+    // 切换分支，若分支没有commit则仓库保持原样，入参为要切换到的分支名
     public boolean switchBranch(String theBranch) throws Exception {
         // 检查要切换到的分支是否存在
         File branchRec = new File(headPath + File.separator + theBranch);
-        if (!branchRec.exists()) {
+        if (!branchRec.exists()) { // 分支不存在，返回false
             System.out.println("Failed to switch branch: Branch '" + theBranch + "' not found!");
             return false;
         }
-        String temp = currBranch;
+
+        // 修改分支相关的属性
+        String currCommit = getCommit();
         currBranch = theBranch;
-
-        // 检查是否有commit
-        String latestCommit = getCommit(); // 获取分支上最新的commit
-        if (latestCommit == null) {
-            System.out.println("Failed to switch branch: No commit found!");
-            currBranch = temp; // 切换不成功，currBranch还原
-            return false;
-        }
-
-        // 修改分支相关属性
         editHEAD(theBranch); // 修改HEAD文件指向切换到的分支
+
+        // 检查是否有commit (没有commit或commitId与切换前一致，则仓库保持现状)
+        String latestCommit = getCommit(); // 获取分支上最新的commit
+        if (latestCommit == null || latestCommit.equals(currCommit))
+            return true;
 
         // 切换该分支最新commit的仓库状态
         clearOldFiles(); // 清空已有文件
