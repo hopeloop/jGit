@@ -66,17 +66,26 @@ public class Branch {
         // 检查要切换到的分支是否存在
         File branchRec = new File(headPath + File.separator + theBranch);
         if (!branchRec.exists()) {
-            System.out.println("Branch '" + theBranch + "' not found!");
+            System.out.println("Failed to switch branch: Branch '" + theBranch + "' not found!");
+            return false;
+        }
+        String temp = currBranch;
+        currBranch = theBranch;
+
+        // 检查是否有commit
+        String latestCommit = getCommit(); // 获取分支上最新的commit
+        if (latestCommit == null) {
+            System.out.println("Failed to switch branch: No commit found!");
+            currBranch = temp; // 切换不成功，currBranch还原
             return false;
         }
 
         // 修改分支相关属性
-        this.currBranch = theBranch;
         editHEAD(theBranch); // 修改HEAD文件指向切换到的分支
 
         // 切换该分支最新commit的仓库状态
-        clearOldFiles(); // 先清空已有文件
-        changeWareHouse(getCommit());
+        clearOldFiles(); // 清空已有文件
+        changeWareHouse(latestCommit);
         return true;
     }
 
@@ -100,9 +109,11 @@ public class Branch {
         FileReader fr2 = new FileReader(objStore.getValue(commitId));
         BufferedReader reader2 = new BufferedReader(fr2);
         String lastCommitId = null;
-        for (String tempStr = reader2.readLine(); tempStr != null; )
-            if (tempStr.startsWith("parent"))
+        for (String tempStr = reader2.readLine(); tempStr != null; tempStr = reader2.readLine())
+            if (tempStr.startsWith("parent")) {
                 lastCommitId = tempStr.substring(7);
+                break;
+            }
 
         reader2.close();
         fr2.close();
@@ -170,10 +181,10 @@ public class Branch {
         FileReader fr = new FileReader(objStore.getValue(treeId));
         BufferedReader reader = new BufferedReader(fr);
 
-        for (String toRecover = reader.readLine(); toRecover != null; ) { // 逐行读取tree文件
+        for (String toRecover = reader.readLine(); toRecover != null; toRecover = reader.readLine()) { // 逐行读取tree文件
             String[] info = toRecover.split(" ");               // split出来info[0]为类型，[1]为文件hash，[2]为文件(夹)名
             if (info[0].equals("Blob")) {                           // 恢复blob
-                File blob = new File(dirPath + File.separator + info[3]);
+                File blob = new File(dirPath + File.separator + info[2]);
                 File content = objStore.getValue(info[1]);
 
                 // 将content写入恢复的文件
