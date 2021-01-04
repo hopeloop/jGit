@@ -121,6 +121,7 @@ public class ObjectStore {
             if (KVFile.getName().equals(key)) {
                 return KVFile;
             }
+        System.out.println("No file named '" + key + "'!");
         return (new File(repoPath + File.separator + objectsSubPath,"null"));
     }
 

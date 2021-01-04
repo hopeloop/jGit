@@ -2,14 +2,14 @@ import java.io.*;
 
 public class Branch {
     private static String repoPath; // 仓库路径(绝对)
-    private String currBranch; // 当前分支名
     private static String headPath; // heads文件夹路径(绝对)
+    private String currBranch; // 当前分支名
     private ObjectStore objStore; // 用该对象调用getValue()
 
     public Branch(String repoPath, String currBranch) {
         this.repoPath = repoPath;
-        this.currBranch = currBranch;
         this.headPath = repoPath + File.separator +"jGit" + File.separator + "refs" + File.separator + "heads";
+        this.currBranch = currBranch;
         objStore = new ObjectStore(repoPath);
     }
 
@@ -20,12 +20,12 @@ public class Branch {
 
     // 生成一个新分支(不自动切换到该分支)，入参为新分支名称
     public boolean newBranch(String branchName) throws Exception {
-        File branchRec = new File(headPath + File.separator + branchName);
-        if (branchRec.exists()) {
+        File newBranch = new File(headPath + File.separator + branchName);
+        if (newBranch.exists()) {
             System.out.println("Branch '" + branchName + "' already exists!");
             return false;
         }
-        branchRec.createNewFile(); // 在heads文件夹下新建文件保存分支的HEAD
+        newBranch.createNewFile(); // 在heads文件夹下新建文件保存分支的HEAD
         return true;
     }
 
@@ -45,14 +45,19 @@ public class Branch {
     }
 
     // 当前分支回滚为上一个提交
-    public void rollBack() throws Exception {
+    public Boolean rollBack() throws Exception {
         String currCommit = getCommit();
+        System.out.println(currCommit);
+        if (currCommit == null) // 当前branch没有commit
+            return false;
         String lastCommit = getParent(currCommit);
-        if (!lastCommit.equals("")) { // 如果可以回滚
-            clearOldFiles(); // 先清空已有文件
-            changeWareHouse(lastCommit); // 还原上一次commit的文件状态
-            editBranchHead(lastCommit); // 修改Head文件指向上一次commit
-        }
+        if (lastCommit == null) // 当前commit没有parent
+            return false;
+
+        clearOldFiles(); // 先清空已有文件
+//        changeWareHouse(lastCommit); // 还原上一次commit的文件状态
+        editBranchHead(lastCommit); // 修改Head文件指向上一次commit
+        return true;
     }
 
     // 切换分支，入参为要切换到的分支名
@@ -64,6 +69,8 @@ public class Branch {
         }
         this.currBranch = theBranch;
         editHEAD(theBranch); // 修改HEAD文件指向切换到的分支
+
+        clearOldFiles(); // 先清空已有文件
         changeWareHouse(getCommit());
         return true;
     }
@@ -76,68 +83,55 @@ public class Branch {
         String currCommitId = reader.readLine();
         reader.close();
         fr.close();
+
+        if (currCommitId == null) // 若当前分支没有commit
+            System.out.println("No commit on current branch!");
+
         return currCommitId;
     }
 
     // 获得commit对应的parent
     private String getParent(String commitId) throws Exception {
-        String currCommitId = getCommit();
-        // 若当前分支没有commit，返回
-        if (currCommitId.equals("")) {
-            System.out.println("No commit on current branch!");
-            return "";
-        }
-        // 检查是否有前一个commit
-        FileReader fr2 = new FileReader(objStore.getValue(currCommitId));
+        FileReader fr2 = new FileReader(objStore.getValue(commitId));
         BufferedReader reader2 = new BufferedReader(fr2);
-        String tempStr = null;
-        while ((tempStr = reader2.readLine()) != null) {
-            if (tempStr.startsWith("parent")) {
-                String lastCommitId = tempStr.substring(7);
-                reader2.close();
-                fr2.close();
-                return lastCommitId;
-            }
-        }
+        String lastCommitId = null;
+        for (String tempStr = reader2.readLine(); tempStr != null; )
+            if (tempStr.startsWith("parent"))
+                lastCommitId = tempStr.substring(7);
+
         reader2.close();
         fr2.close();
-        System.out.println("No former commit to roll back!");
-        return "";
+        if (lastCommitId == null) // 没有parent
+            System.out.println("No parent commit!");
+        return lastCommitId;
     }
 
     // 获得commit对应的tree
     private String getTree(String commitId) throws IOException {
         FileReader fr = new FileReader(objStore.getValue(commitId));
         BufferedReader reader = new BufferedReader(fr);
-        String lastTreeId = reader.readLine().substring(5);
+        String lastTreeId = reader.readLine().substring(5); // 读取commit对应tree的key
         reader.close();
         fr.close();
         return lastTreeId;
     }
 
     // 清空仓库中原有文件(夹)
-    private void clearOldFiles() {
+    private static void clearOldFiles() {
         File[] files = new File(repoPath).listFiles();
-        for (File f: files) {
-            if (f.isFile())
-                f.delete();
-            else {
-                if (!f.getName().equals("jGit")) {
-                    deleteFolder(f);
-                }
-            }
+        for (File f : files) {
+            if (f.getName().equals("jGit")) // jGit文件夹保留
+                continue;
+            deleteFiles(f);
         }
     }
 
     // 删除文件夹操作
-    private void deleteFolder(File f) {
+    private static void deleteFiles(File f) {
         File[] files = f.listFiles();
-        for (File subF : files) {
-            if (f.isFile())
-                f.delete();
-            else
-                deleteFolder(f);
-        }
+        if (files != null) // 非空文件夹，递归删除
+            for (File subF : files)
+                deleteFiles(subF);
         f.delete();
     }
 
