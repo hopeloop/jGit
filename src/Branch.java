@@ -10,7 +10,7 @@ public class Branch {
         this.repoPath = repoPath;
         this.headPath = repoPath + File.separator +"jGit" + File.separator + "refs" + File.separator + "heads";
         this.currBranch = currBranch;
-        objStore = new ObjectStore(repoPath);
+        objStore = new ObjectStore();
     }
 
     // 获得当前分支名
