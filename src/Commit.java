@@ -59,11 +59,12 @@ public class Commit extends ObjectStore{
             File file =new File(repoPath+File.separator+objectsSubPath);
             File[] files = file.listFiles();
             for(File f:files){
-                if(f.getName() == lastCommitKey){
+                if(f.getName().equals(lastCommitKey)){
                     BufferedReader br1 = new BufferedReader(new FileReader(f));
                     String treeKey = br1.readLine();
                     br1.close();
                     lastTreeKey = treeKey.substring(5);
+                    break;
                 }
             }
         }
