@@ -1,14 +1,13 @@
 import java.io.*;
 
 public class ObjectStore {
-    protected String repoPath; // 仓库
+    protected String repoPath=jGit.repoPath; // 仓库
     protected String objectsSubPath; // object存放目录相对路径
     private String key;  // object的key值
     private String type; // object的类型
     private String name; // object源文件(夹)的名称
 
-    protected ObjectStore(String repoPath) {
-        this.repoPath = repoPath;
+    protected ObjectStore() {
         objectsSubPath = "jGit" + File.separator + "objects";
         // 检测objects目录是否存在，不存在则创建
         File dir = new File(repoPath + File.separator + objectsSubPath);
@@ -81,11 +80,11 @@ public class ObjectStore {
                 if (f.isFile()) {
                     if (f.getName().equals(".DS_Store"))
                         continue;
-                    obj = new Blob(repoPath, targetSubPath + File.separator + f.getName());
+                    obj = new Blob(targetSubPath + File.separator + f.getName());
                 } else {
                     if (f.getName().equals("jGit"))
                         continue;
-                    obj = new Tree(repoPath, targetSubPath + File.separator + f.getName());
+                    obj = new Tree(targetSubPath + File.separator + f.getName());
                 }
                 s += obj.getType() + " " + obj.getKey() + " " + obj.getName() + "\n";
             }
