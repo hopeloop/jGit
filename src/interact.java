@@ -51,6 +51,12 @@ public class interact {
                else if(in.equals("git log")){
                    wareHouse.viewLog();
                }
+               else if(Pattern.matches("git reset --soft .*",in)){
+                   Pattern r = Pattern.compile("git reset --soft (.*)");
+                   Matcher m = r.matcher(in);
+                   m.find();
+                   wareHouse.reset(m.group(1));
+               }
                //退出程序
                else if(in.equals("exit")){
                    s=false;
