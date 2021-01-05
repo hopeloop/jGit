@@ -27,23 +27,37 @@ public class Branch {
     // 生成一个新分支(不自动切换到该分支)，新分支获得和当前分支一样的commit，入参为新分支名称,同时生成对应的log
     public boolean newBranch(String branchName) throws Exception {
         File newBranch = new File(headPath + File.separator + branchName);
-        File newLog = new File(logPath,branchName);
+
         // 检查是否已有目标名称的分支存在
         if (newBranch.exists()) {
             System.out.println("Failed to new branch: Branch '" + branchName + "' already exists!");
             return false;
         }
 
-        // 将当前分支的commitId写入新分支的head文件
-        newBranch.createNewFile(); // 新建文件保存分支的head文件
-        newLog.createNewFile();//新建log文件
-        String currCommit = getCommit(); // 获得当前分支的commitId
-        if (currCommit == null) // 当前分支无commit，新分支head文件不用入内容
-            return true;
-        FileWriter fw = new FileWriter(newBranch);
-        fw.write(currCommit);
-        fw.flush();
-        fw.close();
+        // 生成新分支的log文件，内容为当前分支的log
+        File newLog = new File(logPath, branchName);
+        File currLog = new File(logPath, currBranch);
+        if (currLog.exists())
+            objStore.copyFile(currLog, newLog); // 如果已有当前分支log文件，则复制，并创建新log文件
+        else
+            newLog.createNewFile(); // 如果没有当前分支log文件，则直接创建新log文件
+
+        // 生成新分支的head文件，内容为当前分支的head
+        File currHead = new File(headPath, currBranch); // 如果已有当前分支head文件，则复制，并创建新head文件
+        if (currHead.exists())
+            objStore.copyFile(currHead, newBranch); // 如果没有当前分支head文件，则直接创建新head文件
+        else
+            newBranch.createNewFile();
+//        newBranch.createNewFile(); // 新建文件保存分支的head文件
+//        newLog.createNewFile();//新建log文件
+//        String currCommit = getCommit(); // 获得当前分支的commitId
+//        if (currCommit == null) // 当前分支无commit，新分支head文件不用入内容
+//            return true;
+//        FileWriter fw = new FileWriter(newBranch);
+//        fw.write(currCommit);
+//        fw.flush();
+//        fw.close();
+
         return true;
     }
 
@@ -93,7 +107,7 @@ public class Branch {
         currBranch = theBranch;
         editHEAD(theBranch); // 修改HEAD文件指向切换到的分支
 
-        // 检查是否有commit (没有commit或commitId与切换前一致，则仓库保持现状)
+        // 检查commit情况 (没有commit或commitId与切换前一致，则仓库保持现状)
         String latestCommit = getCommit(); // 获取分支上最新的commit
         if (latestCommit == null || latestCommit.equals(currCommit))
             return true;
@@ -203,15 +217,16 @@ public class Branch {
                 File content = objStore.getValue(info[1]);
 
                 // 将content写入恢复的文件
-                FileInputStream fis = new FileInputStream(content); // 新建content的输入流
-                FileOutputStream fos = new FileOutputStream(blob);  // 新建blob的输出流
-                int len = 0;
-                byte[] buf = new byte[1024];
-                while ((len = fis.read(buf)) != -1)
-                    fos.write(buf, 0, len);
-                fis.close();
-                fos.close();
-                blob.createNewFile();
+                objStore.copyFile(content, blob);
+//                FileInputStream fis = new FileInputStream(content); // 新建content的输入流
+//                FileOutputStream fos = new FileOutputStream(blob);  // 新建blob的输出流
+//                int len = 0;
+//                byte[] buf = new byte[1024];
+//                while ((len = fis.read(buf)) != -1)
+//                    fos.write(buf, 0, len);
+//                fis.close();
+//                fos.close();
+//                blob.createNewFile();
 
             } else {                                                // 恢复tree
                 String subDirPath = dirPath + File.separator + info[2];

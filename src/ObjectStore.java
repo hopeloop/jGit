@@ -55,21 +55,22 @@ public class ObjectStore {
                 return;
             // 在objects目录创建文件暂存输出
             File KVFile = new File(repoPath + File.separator + objectsSubPath, key);
-            //建立文件缓冲区
-            byte[] buffer = new byte[1024];
-            //从源文件中读取字节，创建FileInputStream对象
-            FileInputStream is = new FileInputStream(file);
-            //从文件名建立一个FileOutputStream
-            FileOutputStream out = new FileOutputStream(KVFile);
-            int numRead = 0;
-            do {
-                numRead = is.read(buffer);
-                if (numRead > 0) {
-                    out.write(buffer, 0, numRead);
-                }
-            } while (numRead != -1);
-            is.close();
-            out.close();
+            copyFile(file, KVFile);
+//            //建立文件缓冲区
+//            byte[] buffer = new byte[1024];
+//            //从源文件中读取字节，创建FileInputStream对象
+//            FileInputStream is = new FileInputStream(file);
+//            //从文件名建立一个FileOutputStream
+//            FileOutputStream out = new FileOutputStream(KVFile);
+//            int numRead = 0;
+//            do {
+//                numRead = is.read(buffer);
+//                if (numRead > 0) {
+//                    out.write(buffer, 0, numRead);
+//                }
+//            } while (numRead != -1);
+//            is.close();
+//            out.close();
         }
         // 是Tree对象
         else if (type.equals("Tree")) {
@@ -162,5 +163,19 @@ public class ObjectStore {
         fr.write(value.toString());
         fr.flush();
         fr.close();
+    }
+
+    // 将source文件内容全部复制到target文件
+    protected void copyFile(File source, File target) throws IOException {
+        FileInputStream fis = new FileInputStream(source); // 新建content的输入流
+        FileOutputStream fos = new FileOutputStream(target);  // 新建blob的输出流
+        int len = 0;
+        byte[] buf = new byte[1024];
+        while ((len = fis.read(buf)) != -1)
+            fos.write(buf, 0, len);
+        fis.close();
+        fos.close();
+        if (!target.exists())
+            target.createNewFile();
     }
 }
