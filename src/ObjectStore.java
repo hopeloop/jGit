@@ -55,23 +55,10 @@ public class ObjectStore {
                 return;
             // 在objects目录创建文件暂存输出
             File KVFile = new File(repoPath + File.separator + objectsSubPath, key);
+            // 将文件内容复制到对应的blob文件并创建blob文件
             copyFile(file, KVFile);
-//            //建立文件缓冲区
-//            byte[] buffer = new byte[1024];
-//            //从源文件中读取字节，创建FileInputStream对象
-//            FileInputStream is = new FileInputStream(file);
-//            //从文件名建立一个FileOutputStream
-//            FileOutputStream out = new FileOutputStream(KVFile);
-//            int numRead = 0;
-//            do {
-//                numRead = is.read(buffer);
-//                if (numRead > 0) {
-//                    out.write(buffer, 0, numRead);
-//                }
-//            } while (numRead != -1);
-//            is.close();
-//            out.close();
         }
+
         // 是Tree对象
         else if (type.equals("Tree")) {
             // 在objects目录创建文件暂存输出

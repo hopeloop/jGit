@@ -48,15 +48,6 @@ public class Branch {
             objStore.copyFile(currHead, newBranch); // 如果没有当前分支head文件，则直接创建新head文件
         else
             newBranch.createNewFile();
-//        newBranch.createNewFile(); // 新建文件保存分支的head文件
-//        newLog.createNewFile();//新建log文件
-//        String currCommit = getCommit(); // 获得当前分支的commitId
-//        if (currCommit == null) // 当前分支无commit，新分支head文件不用入内容
-//            return true;
-//        FileWriter fw = new FileWriter(newBranch);
-//        fw.write(currCommit);
-//        fw.flush();
-//        fw.close();
 
         return true;
     }
@@ -215,18 +206,8 @@ public class Branch {
             if (info[0].equals("Blob")) {                           // 恢复blob
                 File blob = new File(dirPath + File.separator + info[2]);
                 File content = objStore.getValue(info[1]);
-
                 // 将content写入恢复的文件
                 objStore.copyFile(content, blob);
-//                FileInputStream fis = new FileInputStream(content); // 新建content的输入流
-//                FileOutputStream fos = new FileOutputStream(blob);  // 新建blob的输出流
-//                int len = 0;
-//                byte[] buf = new byte[1024];
-//                while ((len = fis.read(buf)) != -1)
-//                    fos.write(buf, 0, len);
-//                fis.close();
-//                fos.close();
-//                blob.createNewFile();
 
             } else {                                                // 恢复tree
                 String subDirPath = dirPath + File.separator + info[2];
