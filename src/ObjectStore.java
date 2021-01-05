@@ -38,7 +38,7 @@ public class ObjectStore {
      * @param targetSubPath
      * @throws Exception
      */
-    public void createFile(String targetSubPath) throws Exception { // 源文件(夹)相对路径
+    protected void createFile(String targetSubPath) throws Exception { // 源文件(夹)相对路径
         //创建源文件(夹)的File对象
         File file = new File(repoPath + File.separator + targetSubPath);
         name = file.getName();
@@ -113,7 +113,7 @@ public class ObjectStore {
      * （可外部调用）给定key也就是hash值，返回文件
      * @param key
      */
-    public File getValue(String key) {
+    protected File getValue(String key) {
         File file = new File(repoPath + File.separator + objectsSubPath);
         File[] files = file.listFiles();
         for (File KVFile : files)
@@ -124,7 +124,7 @@ public class ObjectStore {
         return (new File(repoPath + File.separator + objectsSubPath,"null"));
     }
 
-    public String getName() {
+    protected String getName() {
         return name;
     }
 }

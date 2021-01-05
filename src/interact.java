@@ -25,11 +25,11 @@ public class interact {
                    System.out.println("输入message:");
                    jGit.commit(input.nextLine());
                }
-               //查看分支
+               //查看分支 命令：git branch
                else if(in.equals("git branch")){
                    wareHouse.showBranches();
                }
-               //新建分支
+               //新建分支 命令：git branch branch_name
                else if(Pattern.matches("git branch.*",in)){
                    Pattern r = Pattern.compile("git branch (.*)");
                    Matcher m = r.matcher(in);
@@ -37,19 +37,21 @@ public class interact {
 
                    wareHouse.newBranch(m.group(1));
                }
-               //切换分支
+               //切换分支 命令：git checkout branch_name
                else if(Pattern.matches("git checkout.*",in)){
                    Pattern r = Pattern.compile("git checkout (.*)");
                    Matcher m = r.matcher(in);
                    m.find();
                    wareHouse.switchBranch(m.group(1));
                }
-               //回滚分支
-               else if(in.equals("git rollback")){
+               //回滚到本分支上一次commit 命令：git reset
+               else if(in.equals("git reset")){
                    wareHouse.rollBack();
                }
+               //退出程序
                else if(in.equals("exit")){
                    s=false;
+                   input.close();
                }
                else
                    System.out.println("不存在这项指令，请重新输入。\n");

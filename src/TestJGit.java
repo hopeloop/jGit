@@ -2,8 +2,8 @@ import java.io.File;
 
 public class TestJGit {
     public static void main(String args[]) {
-//        String path="C:\\Users\\cherr\\IdeaProjects\\java_hw_project\\recipes";
-        String path = "/Users/WangQinqi/Desktop/recipes";
+        String path="C:\\Users\\cherr\\IdeaProjects\\java_hw_project\\recipes";
+//        String path = "/Users/WangQinqi/Desktop/recipes";
         // 创建jGit对象
         jGit wareHouse = new jGit(path);
 

@@ -3,15 +3,16 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 public class Commit extends ObjectStore{
-    String msg;
-    String timeStamp;
-    String lastTreeKey;
-    String latestTreeKey;
-    String lastCommitKey;
-    String latestCommitKey;
+    String msg;             //commit message
+    String timeStamp;       //时间戳
+    String lastTreeKey;     //上一次的tree key
+    String latestTreeKey;   //当前根目录的tree key
+    String lastCommitKey;   //上一次的commit id
+    String latestCommitKey; //本次的commit id
 
     String committer;
 
+    //构造Commit类，需要传入参数 commit message
     Commit(String message) throws Exception {
         committer = jGit.committer;
         setType("Commit");
@@ -29,7 +30,7 @@ public class Commit extends ObjectStore{
         this.timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time);
     }
 
-    //从HEAD文件中取出现在的branch地址
+    //从HEAD文件中取出当前branch的head地址
     private String getCurrBranch() throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(repoPath+File.separator+"jGit"+File.separator+"HEAD"));
         String HEAD=br.readLine();
@@ -49,7 +50,8 @@ public class Commit extends ObjectStore{
         fw.close();
     }
 
-    protected boolean isCommitable() throws Exception {
+    //判断根目录与上一次commit的根目录相对比有无变化
+    private boolean isCommitable() throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(repoPath+ File.separator+"jGit"+File.separator+getCurrBranch()));
         //读取branch的第一行
         String first_line = br.readLine();
@@ -83,15 +85,16 @@ public class Commit extends ObjectStore{
             return true;
     }
 
-    protected void createCommit() throws Exception {
+    //生成本次commit文件
+    private void createCommit() throws Exception {
         File commit = new File(repoPath+File.separator+objectsSubPath,"name");
         StringBuilder sb = new StringBuilder();
         sb.append("tree "+latestTreeKey+"\n");
         //如果有parent commit 则写入，没有则跳过这行
         if(lastCommitKey !=null)
             sb.append("parent "+lastCommitKey+"\n");
-        sb.append("Time: "+timeStamp+"\n");
-        sb.append("Committer:"+committer+"\n");
+        sb.append("Time: "+timeStamp+"\n");      //加入时间戳
+        sb.append("Committer:"+committer+"\n");  //加入committer
         sb.append(msg);
         FileWriter fr = new FileWriter(commit);
         fr.write(sb.toString());
