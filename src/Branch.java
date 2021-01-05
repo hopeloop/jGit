@@ -28,12 +28,14 @@ public class Branch {
         }
 
         // 将当前分支的commitId写入新分支的head文件
+        newBranch.createNewFile(); // 新建文件保存分支的head文件
         String currCommit = getCommit(); // 获得当前分支的commitId
+        if (currCommit == null) // 当前分支无commit，新分支head文件不用入内容
+            return true;
         FileWriter fw = new FileWriter(newBranch);
         fw.write(currCommit);
         fw.flush();
         fw.close();
-        newBranch.createNewFile(); // 新建文件保存分支的head文件
         return true;
     }
 

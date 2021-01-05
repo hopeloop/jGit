@@ -2,13 +2,14 @@ import java.io.File;
 
 public class TestJGit {
     public static void main(String args[]) {
-        String path="C:\\Users\\cherr\\IdeaProjects\\java_hw_project\\recipes";
+//        String path="C:\\Users\\cherr\\IdeaProjects\\java_hw_project\\recipes";
+        String path = "/Users/WangQinqi/Desktop/recipes";
         // 创建jGit对象
         jGit wareHouse = new jGit(path);
 
         try {
             // 初始化仓库
-//            jGit.init();
+            jGit.init();
 
             //测试commit
             jGit.commit("第一次commit");   //结果：4f30cfbc82c9fca11f6222d4b6bfc434422c415 第一次commit
