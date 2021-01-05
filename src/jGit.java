@@ -5,6 +5,7 @@ import java.io.FileWriter;
 public class jGit {
     public static String repoPath; // 待管理项目的路径
     public static Branch branch; // 分支对象
+    public static String committer;// 提交者
 
     public jGit(String repoPath) {
         this.repoPath = repoPath;

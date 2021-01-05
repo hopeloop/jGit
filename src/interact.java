@@ -5,7 +5,7 @@ public class interact {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         System.out.println("请输入用户名：");
-        jGit.username = input.nextLine();
+        jGit.committer= input.nextLine();
         System.out.println("请输入管理仓库的绝对地址：");
         String path= input.nextLine();
 

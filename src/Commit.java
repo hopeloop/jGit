@@ -10,7 +10,10 @@ public class Commit extends ObjectStore{
     String lastCommitKey;
     String latestCommitKey;
 
+    String committer;
+
     Commit(String message) throws Exception {
+        committer = jGit.committer;
         setType("Commit");
         doTimeStamp();
         this.msg = message;
@@ -88,6 +91,7 @@ public class Commit extends ObjectStore{
         if(lastCommitKey !=null)
             sb.append("parent "+lastCommitKey+"\n");
         sb.append("Time: "+timeStamp+"\n");
+        sb.append("Committer:"+committer+"\n");
         sb.append(msg);
         FileWriter fr = new FileWriter(commit);
         fr.write(sb.toString());
