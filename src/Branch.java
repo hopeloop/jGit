@@ -26,7 +26,7 @@ public class Branch {
 
     // 生成一个新分支(不自动切换到该分支)，新分支获得和当前分支一样的commit，入参为新分支名称,同时生成对应的log
     public boolean newBranch(String branchName) throws Exception {
-        File newBranch = new File(headPath + File.separator + branchName);
+        File newBranch = new File(headPath, branchName);
 
         // 检查是否已有目标名称的分支存在
         if (newBranch.exists()) {
@@ -191,7 +191,7 @@ public class Branch {
     }
 
     // 仓库状态回到指定的commit
-    private void changeWareHouse(String commitId) throws Exception {
+    public void changeWareHouse(String commitId) throws Exception {
         String treeId = getTree(commitId); // 获得commit对应的tree
         recoverWithTree(treeId, repoPath); // 读取上次提交对应的tree，恢复文件(夹)
     }
