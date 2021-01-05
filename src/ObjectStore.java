@@ -1,5 +1,4 @@
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class ObjectStore {
@@ -134,11 +133,14 @@ public class ObjectStore {
         return name;
     }
 
+    //传入文件地址，获取文件Value(ArrayList,每个元素存储一行)
     protected static ArrayList<String> getValue_inLines(String filePath) throws IOException {
         File file = new File(filePath);
         return getValue_inLines_from_File(file);
     }
 
+
+    //传入文件，获取文件Value(ArrayList,每个元素存储一行)
     protected static ArrayList<String> getValue_inLines_from_File(File file) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(file));
         String content;
@@ -150,6 +152,7 @@ public class ObjectStore {
         return value;
     }
 
+    //传入文件名，value,存储地址，和是否append,生成文件
     protected void writeIn(String FileName,StringBuilder value,String savePath,boolean append) throws IOException {
         File file = new File(savePath+File.separator+FileName);
         if(!file.exists()){

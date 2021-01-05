@@ -82,7 +82,6 @@ public class Commit extends ObjectStore{
         sb.append("Committer:"+committer+"\n");  //加入committer
         sb.append(msg);
 
-
         //计算新commit的key,并命其为文件名
         latestCommitKey = new Hash(sb).getHashcode();
         writeIn(latestCommitKey,sb,repoPath+File.separator+objectsSubPath,false);
