@@ -20,6 +20,10 @@ public class Branch {
         return currBranch;
     }
 
+    public static String getHeadPath(){
+        return headPath;
+    }
+
     // 生成一个新分支(不自动切换到该分支)，新分支获得和当前分支一样的commit，入参为新分支名称,同时生成对应的log
     public boolean newBranch(String branchName) throws Exception {
         File newBranch = new File(headPath + File.separator + branchName);

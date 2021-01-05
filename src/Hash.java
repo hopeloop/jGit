@@ -1,5 +1,6 @@
 import java.io.*;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Hash {
     private String  Hashcode;
@@ -13,6 +14,18 @@ public class Hash {
     //构造对象，参数：输入源文件
     Hash(File file) throws Exception {
         Hashcode = SHA1Checksum(file);
+    }
+
+    Hash(StringBuilder value) throws NoSuchAlgorithmException {
+        byte[] buffer = value.toString().getBytes();
+        MessageDigest complete = MessageDigest.getInstance("SHA-1");
+        complete.update(buffer,0, buffer.length);
+        byte[] sha1 = complete.digest();
+        String result = "";
+        for (int i = 0; i < sha1.length; i++) {
+            result += Integer.toString(sha1[i]&0xFF, 16);
+        }
+        Hashcode = result;
     }
 
 

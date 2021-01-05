@@ -1,16 +1,20 @@
 import java.io.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 public class ObjectStore {
     protected String repoPath=jGit.repoPath; // 仓库
     protected String objectsSubPath; // object存放目录相对路径
     protected String logsPath;//log文件存放的绝对地址
+    protected String headsPath;//branch head存放的绝对地址
     private String key;  // object的key值
     private String type; // object的类型
     private String name; // object源文件(夹)的名称
 
     protected ObjectStore() {
-        logsPath=jGit.repoPath+File.separator+"jGit"+File.separator+"logs";
+        logsPath=repoPath+File.separator+"jGit"+File.separator+"logs";
         objectsSubPath = "jGit" + File.separator + "objects";
+        headsPath = Branch.getHeadPath();
         // 检测objects目录是否存在，不存在则创建
         File dir = new File(repoPath + File.separator + objectsSubPath);
         if (!dir.exists())
@@ -112,7 +116,7 @@ public class ObjectStore {
     }
 
     /**
-     * （可外部调用）给定key也就是hash值，返回文件
+     * （可外部调用）给定key，返回文件
      * @param key
      */
     protected File getValue(String key) {
@@ -130,7 +134,23 @@ public class ObjectStore {
         return name;
     }
 
-    protected void writeInFile(String FileName,StringBuilder value,String savePath,boolean append) throws IOException {
+    protected static ArrayList<String> getValue_inLines(String filePath) throws IOException {
+        File file = new File(filePath);
+        return getValue_inLines_from_File(file);
+    }
+
+    protected static ArrayList<String> getValue_inLines_from_File(File file) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String content;
+        ArrayList<String> value = new ArrayList<>();
+        while((content = br.readLine())!=null){
+            value.add(content);
+        }
+        br.close();
+        return value;
+    }
+
+    protected void writeIn(String FileName,StringBuilder value,String savePath,boolean append) throws IOException {
         File file = new File(savePath+File.separator+FileName);
         if(!file.exists()){
             file.createNewFile();

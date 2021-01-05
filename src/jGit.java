@@ -61,21 +61,14 @@ public class jGit {
     }
 
     public void viewLog() throws IOException {
-        ArrayList<String> arrayList = new ArrayList<>();
-
-        File log = new File(repoPath+File.separator+ "jGit" + File.separator +"logs"+File.separator+branch.currBranch);
-        FileReader fr = new FileReader(log);
-        BufferedReader br = new BufferedReader(fr);
-        String str;
-
-        while((str = br.readLine())!=null){
-            arrayList.add(str);
-        }
-
-        br.close();
-        fr.close();
+        //获取log
+        ArrayList<String> arrayList =
+            ObjectStore.getValue_inLines(repoPath+File.separator+ "jGit" + File.separator +"logs"+File.separator+branch.currBranch);
 
         int len = arrayList.size();
+        if(len==0){
+            System.out.println("No Commit has been performed.");
+        }
         for(int i=len-1; i>-1; i--){
             String content = arrayList.get(i);
             String[] arr= content.split(" ");
@@ -86,7 +79,4 @@ public class jGit {
         }
     }
 
-//    public void rollBack() throws Exception {
-//        new RollBack(repoPath, currBranch);
-//    }
 }
