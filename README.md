@@ -93,6 +93,64 @@
   3. 删除分支—git branch -d dev(分支名)
   4. 切换分支—git checkout dev
 
+## 实现
+
+### 类：
+
+#### **1.ObjectStore**
+
+
+
+#### **2.Hash**
+
+
+
+#### **3.Blob**
+
+
+
+#### **4.Tree**
+
+
+
+#### 5.Branch
+
+
+
+#### **6.Commit**
+
+   - 主要方法：
+
+     1. isCommitable: 判断Head文件是否存在，存在则取出保存在其中的commit key（lastCommitKey），进而取出上一次的tree key。
+
+    调用Tree方法对工作区根目录（除jGit文件夹外）生成新的treekey (latestTreeKey)。比较两个tree key是否相同。
+    	2. createCommit：生成新Commit的Value,并写入文件。
+    	3. updateHead：如果Head文件不存在，则在jGit文件夹生成HEAD文件，如果已存在，将新生成的commit key存入（覆盖）。
+
+
+​     
+​    -msg:String         commit message
+​    -timeStamp:String   时间戳
+​    -lastTreeKey:String 上次提交时根目录的tree key
+​    -latestTreeKey:String
+​    -lastCommitKey:String
+​    -latestCommitKey:String
+​    
+
+    Commit()
+    -doTimeStamp():void 生成时间戳
+    -updateHead():void 更新Head,如果没有则创建
+    -isCommitable：boolean 判断是否能Commit
+    -createCommit:void 
+
+#### 7.Interect
+
+
+
+#### 8.jGit
+
+
+
 ## 每周任务
 
 ### 12月3日——12月10日 第一周任务
