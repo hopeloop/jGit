@@ -1,6 +1,5 @@
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
+import java.io.*;
+import java.util.ArrayList;
 
 public class jGit {
     public static String repoPath; // 待管理项目的路径
@@ -21,6 +20,9 @@ public class jGit {
             wareHouse.mkdirs();
             File refHouse = new File(repoPath + File.separator + "jGit" + File.separator + "refs" + File.separator + "heads");
             refHouse.mkdirs();
+            File dir2 = new File(repoPath+File.separator+ "jGit" + File.separator +"logs");
+            if(!dir2.exists())
+                dir2.mkdir();
         } else {
             System.out.println("JGit warehouse already exists!");
             return;
@@ -56,6 +58,32 @@ public class jGit {
 
     public void rollBack() throws Exception {
         branch.rollBack();
+    }
+
+    public void viewLog() throws IOException {
+        ArrayList<String> arrayList = new ArrayList<>();
+
+        File log = new File(repoPath+File.separator+ "jGit" + File.separator +"logs"+branch.currBranch);
+        FileReader fr = new FileReader(log);
+        BufferedReader br = new BufferedReader(fr);
+        String str;
+
+        while((str = br.readLine())!=null){
+            arrayList.add(str);
+        }
+
+        br.close();
+        fr.close();
+
+        int len = arrayList.size();
+        for(int i=len-1; i>-1; i--){
+            String content = arrayList.get(i);
+            String[] arr= content.split(" ");
+            System.out.println("commit "+arr[1]+arr[2]);
+            System.out.println("Author:"+arr[3]);
+            System.out.println("Date:"+arr[4]+" "+arr[5]+"\n");
+            System.out.println(arr[6]);
+        }
     }
 
 //    public void rollBack() throws Exception {

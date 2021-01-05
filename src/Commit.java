@@ -3,18 +3,20 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 public class Commit extends ObjectStore{
-    String msg;             //commit message
-    String timeStamp;       //时间戳
-    String lastTreeKey;     //上一次的tree key
-    String latestTreeKey;   //当前根目录的tree key
-    String lastCommitKey;   //上一次的commit id
-    String latestCommitKey; //本次的commit id
+    protected String msg;             //commit message
+    protected String timeStamp;       //时间戳
+    protected String lastTreeKey;     //上一次的tree key
+    protected String latestTreeKey;   //当前根目录的tree key
+    protected String lastCommitKey;   //上一次的commit id
+    protected String latestCommitKey; //本次的commit id
 
-    String committer;
+    protected String committer;
+    protected String curr_branch;
 
     //构造Commit类，需要传入参数 commit message
     Commit(String message) throws Exception {
-        committer = jGit.committer;
+        this.curr_branch=jGit.branch.currBranch;
+        this.committer = jGit.committer;
         setType("Commit");
         doTimeStamp();
         this.msg = message;
@@ -27,7 +29,7 @@ public class Commit extends ObjectStore{
     //生成TimeStamp
     private void doTimeStamp(){
         Timestamp time =new Timestamp(System.currentTimeMillis());
-        this.timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time);
+        timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time);
     }
 
     //从HEAD文件中取出当前branch的head地址
@@ -104,7 +106,20 @@ public class Commit extends ObjectStore{
         //计算新commit的key,并命其为文件名
         latestCommitKey = new Hash(commit).getHashcode();
         commit.renameTo(new File(repoPath+File.separator+objectsSubPath,latestCommitKey));
+        //记录到Log中
+        writeInFile(curr_branch,addToLog(),logsPath,true);
         //更新Head
         updateCommitKey();
+    }
+
+    private StringBuilder addToLog(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(lastCommitKey+" ");
+        sb.append(latestCommitKey +" ("+curr_branch+") ");
+        sb.append(committer+" ");
+        sb.append(timeStamp+" ");
+        sb.append(msg+"\n");
+
+        return sb;
     }
 }

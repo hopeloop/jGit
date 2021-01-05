@@ -3,12 +3,14 @@ import java.io.*;
 public class Branch {
     private static String repoPath; // 仓库路径(绝对)
     private static String headPath; // heads文件夹路径(绝对)
-    private String currBranch; // 当前分支名
+    private static String logPath; // logs文件夹路径(绝对)
+    protected String currBranch; // 当前分支名
     private ObjectStore objStore; // 用该对象调用getValue()
 
     public Branch(String repoPath, String currBranch) {
         this.repoPath = repoPath;
         this.headPath = repoPath + File.separator +"jGit" + File.separator + "refs" + File.separator + "heads";
+        this.logPath = repoPath + File.separator +"jGit" + File.separator + "logs";
         this.currBranch = currBranch;
         objStore = new ObjectStore();
     }
@@ -18,9 +20,10 @@ public class Branch {
         return currBranch;
     }
 
-    // 生成一个新分支(不自动切换到该分支)，新分支获得和当前分支一样的commit，入参为新分支名称
+    // 生成一个新分支(不自动切换到该分支)，新分支获得和当前分支一样的commit，入参为新分支名称,同时生成对应的log
     public boolean newBranch(String branchName) throws Exception {
         File newBranch = new File(headPath + File.separator + branchName);
+        File newLog = new File(logPath,branchName);
         // 检查是否已有目标名称的分支存在
         if (newBranch.exists()) {
             System.out.println("Failed to new branch: Branch '" + branchName + "' already exists!");
@@ -29,6 +32,7 @@ public class Branch {
 
         // 将当前分支的commitId写入新分支的head文件
         newBranch.createNewFile(); // 新建文件保存分支的head文件
+        newLog.createNewFile();//新建log文件
         String currCommit = getCommit(); // 获得当前分支的commitId
         if (currCommit == null) // 当前分支无commit，新分支head文件不用入内容
             return true;
@@ -215,4 +219,5 @@ public class Branch {
         reader.close();
         fr.close();
     }
+
 }

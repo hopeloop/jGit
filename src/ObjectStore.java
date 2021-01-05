@@ -3,11 +3,13 @@ import java.io.*;
 public class ObjectStore {
     protected String repoPath=jGit.repoPath; // 仓库
     protected String objectsSubPath; // object存放目录相对路径
+    protected String logsPath;//log文件存放的绝对地址
     private String key;  // object的key值
     private String type; // object的类型
     private String name; // object源文件(夹)的名称
 
     protected ObjectStore() {
+        logsPath=jGit.repoPath+File.separator+"jGit"+File.separator+"logs";
         objectsSubPath = "jGit" + File.separator + "objects";
         // 检测objects目录是否存在，不存在则创建
         File dir = new File(repoPath + File.separator + objectsSubPath);
@@ -126,5 +128,16 @@ public class ObjectStore {
 
     protected String getName() {
         return name;
+    }
+
+    protected void writeInFile(String FileName,StringBuilder value,String savePath,boolean append) throws IOException {
+        File file = new File(savePath+File.separator+FileName);
+        if(!file.exists()){
+            file.createNewFile();
+        }
+        FileWriter fr = new FileWriter(file,append);
+        fr.write(value.toString());
+        fr.flush();
+        fr.close();
     }
 }
