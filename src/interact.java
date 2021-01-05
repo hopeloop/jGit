@@ -31,11 +31,18 @@ public class interact {
                }
                //新建分支
                else if(Pattern.matches("git branch.*",in)){
-                   wareHouse.newBranch("dev");
+                   Pattern r = Pattern.compile("git branch (.*)");
+                   Matcher m = r.matcher(in);
+                   m.find();
+
+                   wareHouse.newBranch(m.group(1));
                }
                //切换分支
                else if(Pattern.matches("git checkout.*",in)){
-                   wareHouse.switchBranch("dev");
+                   Pattern r = Pattern.compile("git checkout (.*)");
+                   Matcher m = r.matcher(in);
+                   m.find();
+                   wareHouse.switchBranch(m.group(1));
                }
                //回滚分支
                else if(in.equals("git rollback")){
