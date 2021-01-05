@@ -48,6 +48,9 @@ public class interact {
                else if(in.equals("git reset")){
                    wareHouse.rollBack();
                }
+               else if(in.equals("git log")){
+                   wareHouse.viewLog();
+               }
                //退出程序
                else if(in.equals("exit")){
                    s=false;
