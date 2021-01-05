@@ -60,6 +60,10 @@ public class jGit {
         branch.rollBack();
     }
 
+    public void reset(String commitId)  throws Exception {
+        branch.changeWareHouse(commitId);
+    }
+
     public void viewLog() throws IOException {
         //获取log
         ArrayList<String> arrayList =
