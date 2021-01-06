@@ -1,4 +1,5 @@
 import java.io.*;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,8 +22,18 @@ public class Commit extends ObjectStore{
         setType("Commit");
         doTimeStamp();
         this.msg = message;
-        if(isCommitable())
-            createCommit();
+        if(isCommitable()){
+            //生成Commit Key-Value 并将value存入sb中
+            StringBuilder sb= generateCommitKV();
+            //Key-Value写入文件
+            writeIn(latestCommitKey,sb,repoPath+File.separator+objectsSubPath,false);
+            //记录到Log中
+            writeIn(curr_branch,addToLog(),logsPath,true);
+            //更新Head
+            updateCommitKey();
+        }
+
+
     }
 
 
@@ -30,13 +41,6 @@ public class Commit extends ObjectStore{
     private void doTimeStamp(){
         Timestamp time =new Timestamp(System.currentTimeMillis());
         timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time);
-    }
-
-    //从HEAD文件中取出当前branch的head地址
-    private String getCurrBranch() throws Exception {
-        String HEAD = getValue_inLines(repoPath+File.separator+"jGit"+File.separator+"HEAD").get(0);
-        String currBranchPath = HEAD.substring(5);
-        return currBranchPath;
     }
 
     //将当前分支的commit key更新
@@ -48,7 +52,7 @@ public class Commit extends ObjectStore{
     //判断根目录与上一次commit的根目录相对比有无变化
     private boolean isCommitable() throws Exception {
         //读取branch的第一行
-        ArrayList<String> first_line = getValue_inLines(repoPath+ File.separator+"jGit"+File.separator+"refs"+File.separator+"heads"+File.separator+curr_branch);
+        ArrayList<String> first_line = getValue_inLines(headsPath+File.separator+curr_branch);
         //生成最新的树,并获取最新的tree key
         latestTreeKey = new Tree("").getKey();
         //如果branch中存有最新一次的commit key，则取出进而取出上一次的tree key
@@ -58,7 +62,7 @@ public class Commit extends ObjectStore{
             String treeKey = getValue_inLines_from_File(file).get(0);
             lastTreeKey = treeKey.substring(5);
         }
-//        branch中没有内容说明之前没有commit过，直接返回true
+        //branch中没有内容说明之前没有commit过，直接返回true
         else
             return true;
 
@@ -70,9 +74,8 @@ public class Commit extends ObjectStore{
             return true;
     }
 
-    //生成本次commit文件
-    private void createCommit() throws Exception {
-        File commit = new File(repoPath+File.separator+objectsSubPath,"name");
+    //生成本次commit的Key-Value,返回value
+    private StringBuilder generateCommitKV() throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("tree "+latestTreeKey+"\n");
         //如果有parent commit 则写入，没有则跳过这行
@@ -81,14 +84,10 @@ public class Commit extends ObjectStore{
         sb.append("Time: "+timeStamp+"\n");      //加入时间戳
         sb.append("Committer:"+committer+"\n");  //加入committer
         sb.append(msg);
-
-        //计算新commit的key,并命其为文件名
+        //生成新commit key
         latestCommitKey = new Hash(sb).getHashcode();
-        writeIn(latestCommitKey,sb,repoPath+File.separator+objectsSubPath,false);
-        //记录到Log中
-        writeIn(curr_branch,addToLog(),logsPath,true);
-        //更新Head
-        updateCommitKey();
+
+        return sb;
     }
 
     private StringBuilder addToLog(){
