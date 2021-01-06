@@ -337,6 +337,45 @@
 
 - viewLog，读取当前分支对应的log文件，以一行（一次Commit）为一个元素存放在ArrayList中，从后往前读数组（最近的Commit先显示），并进行格式化输出。
 
+### 后续关于git add和diff的想法：
+#### git add：
+
+git add，将文件生成Blob，并添加到暂存区(Staging Area)，即更新index文件内容。git中的index是位于`<baseOfRepo>/.git/index`的二进制文件。通过`git ls -files -s` 可发现index文件内容如下例：
+
+```
+100644 a9ec3a6e2aac41be1ec1f7e62c9c5871d256c97c 0       src/jGit.java
+100644 9d4305a9f73e82554b2a855065b2eb07e4ff5719 0       test
+```
+
+列出来当前分支所有的文件，存储了时间戳，哈希值以及文件名（文件相对地址）。
+
+此时修改例子中的test文件，重新add，index文件中test对应的hash改变，指向新生成的blob。
+
+本项目目前commit命令是直接对工作区根目录生成tree，如果添加add方法，那么新的commit命令应该将暂存区的tree提交到本地库。
+
+##### 思路：
+
+`git add path` :
+
+​	1.将path传入ObjectStore类createFile()方法，生成对应的blob
+
+​	2.修改index文件内容，形式如下（hash 文件名/文件相对地址）
+
+```
+9d4305a9f73e82554b2a855065b2eb07e4ff5719 src/jGit.java
+```
+
+`git commit`:
+
+​	1.根据index内容生成树，获取treekey
+
+​	2.按原commit类方法生成commit，更新branch head
+
+#### git diff：
+
+
+
+
 ## 每周任务
 
 ### 12月3日——12月10日 第一周任务
