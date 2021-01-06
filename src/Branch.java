@@ -87,22 +87,24 @@ public class Branch {
         // 检查要切换到的分支是否存在
         File branchRec = new File(headPath + File.separator + theBranch);
         if (!branchRec.exists()) { // 分支不存在，返回false
-            System.out.println("Failed to switch branch: Branch '" + theBranch + "' not found!");
+            System.out.println("Failed to switc" +
+                    "h branch: Branch '" + theBranch + "' not found!");
             return false;
         }
 
-        // 修改分支相关的属性
+        // 改变currBranch前获取当前分支的head commit
         String currCommit = getCommit();
+
+        // 修改分支相关的属性
         currBranch = theBranch;
         editHEAD(theBranch); // 修改HEAD文件指向切换到的分支
 
         // 检查commit情况 (没有commit或commitId与切换前一致，则仓库保持现状)
-        String latestCommit = getCommit(); // 获取分支上最新的commit
+        String latestCommit = getCommit(); // 获取切换到的分支的head commit
         if (latestCommit == null || latestCommit.equals(currCommit))
             return true;
 
         // 切换该分支最新commit的仓库状态
-        clearOldFiles(); // 清空已有文件
         changeWareHouse(latestCommit);
         return true;
     }
