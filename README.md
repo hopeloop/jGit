@@ -334,10 +334,17 @@
     入参：无
 
     实现：调用Branch类的changeWareHouse()方法
+    
+  + **读取log文件，并格式化输出**
 
-- viewLog，读取当前分支对应的log文件，以一行（一次Commit）为一个元素存放在ArrayList中，从后往前读数组（最近的Commit先显示），并进行格式化输出。
+    方法：viewLog( )
 
-### 后续关于git add和diff的想法：
+    入参：无
+
+    实现：读取当前分支对应的log文件，以一行（一次Commit）为一个元素存放在ArrayList中，从后往前读数组（最近的Commit先显示）
+
+
+### git add和diff：
 #### git add：
 
 git add，将文件生成Blob，并添加到暂存区(Staging Area)，即更新index文件内容。git中的index是位于`<baseOfRepo>/.git/index`的二进制文件。通过`git ls -files -s` 可发现index文件内容如下例：
