@@ -121,35 +121,50 @@
 
    - 主要方法：
 
-     1. isCommitable: 判断Head文件是否存在，存在则取出保存在其中的commit key（lastCommitKey），进而取出上一次的tree key。
+        - 构造方法需要传入commit message，构造时通过isCommitable方法判断根目录是否发生改变。
+             - 如果没有改变，提示仓库无变化。
+             - 如果改变
+                  - generateCommitKV方法生成commit的Key-Value，使用父类ObjectStore的writeIn方法写入文件。
+                  - addToLog方法生成log内容，用writeIn追加到log文件
+                  - updateCommitKey更新该分支head中存储的CommitKey。
 
-    调用Tree方法对工作区根目录（除jGit文件夹外）生成新的treekey (latestTreeKey)。比较两个tree key是否相同。
-    	2. createCommit：生成新Commit的Value,并写入文件。
-    	3. updateHead：如果Head文件不存在，则在jGit文件夹生成HEAD文件，如果已存在，将新生成的commit key存入（覆盖）。
+     - isCommitable，返回bool值
 
+       - 生成根目录的树，获latest tree key
+       - 读取branch head中commit key, 进而从commit文件取出 last tree key，并与latest tree key比较是否相等，相等则返回false，否则提示仓库无变化。如果branch head中为空，直接返回true。
 
-​     
-​    -msg:String         commit message
-​    -timeStamp:String   时间戳
-​    -lastTreeKey:String 上次提交时根目录的tree key
-​    -latestTreeKey:String
-​    -lastCommitKey:String
-​    -latestCommitKey:String
-​    
+     - generateCommitKV，生成Key-Value,并返回StringBuilder value
 
-    Commit()
+       - 生成value内容，形式如下
+
+         ```
+         tree a51f4efcced167950d39d4082369240cdfcb4
+         parent 8ac3ff9a86d0a8c475bc85267d3da76fd6b29c96
+         Time: 2021-01-06 08:24:06
+         Committer:
+         commit message
+         ```
+
+       - 通过Value new一个Hash对象，并获取key存入latestCommitKey
+
+     - addToLog，生成log内容以StringBuilder形式返回
+       ​
+
+    Commit(String message)
     -doTimeStamp():void 生成时间戳
-    -updateHead():void 更新Head,如果没有则创建
-    -isCommitable：boolean 判断是否能Commit
-    -createCommit:void 
+    -updateCommitKey():void 更新branch head内容
+    -isCommitable()：boolean 判断是否能Commit
+    -generateCommitKV():StringBuilder
+    -addToLog():StringBuilder
 
-#### 7.Interect
+#### 7.Interact
 
-
+使用Scanner从控制台获得输入，用if语句配合正则表达式判断并调用jGit中相对应的方法。某些方法（如新建分支`git branch branch_name`）需要提取部分字符，同样使用正则获取。
 
 #### 8.jGit
 
-
+- 
+- viewLog，读取当前分支对应的log文件，以一行（一次Commit）为一个元素存放在ArrayList中，从后往前读数组（最近的Commit先显示），并进行格式化输出。
 
 ## 每周任务
 

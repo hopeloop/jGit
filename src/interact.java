@@ -21,38 +21,39 @@ public class interact {
            while(s){
                System.out.println("请输入命令：");
                String in = input.nextLine();
-               if(Pattern.matches("git commit",in)){
+               if(Pattern.matches("git\\s*commit\\s*",in)){
                    System.out.println("输入message:");
                    jGit.commit(input.nextLine());
                }
                //查看分支 命令：git branch
-               else if(in.equals("git branch")){
+               else if(Pattern.matches("git\\s*branch\\s*",in)){
                    wareHouse.showBranches();
                }
                //新建分支 命令：git branch branch_name
-               else if(Pattern.matches("git branch.*",in)){
-                   Pattern r = Pattern.compile("git branch (.*)");
+               else if(Pattern.matches("git\\s*branch\\s*(\\w.*)",in)){
+                   Pattern r = Pattern.compile("git\\s*branch\\s*(\\w.*)");
                    Matcher m = r.matcher(in);
                    m.find();
-
                    wareHouse.newBranch(m.group(1));
                }
                //切换分支 命令：git checkout branch_name
-               else if(Pattern.matches("git checkout.*",in)){
-                   Pattern r = Pattern.compile("git checkout (.*)");
+               else if(Pattern.matches("git\\s*checkout\\s*(\\w.*)",in)){
+                   Pattern r = Pattern.compile("git\\s*checkout\\s*(\\w.*)");
                    Matcher m = r.matcher(in);
                    m.find();
                    wareHouse.switchBranch(m.group(1));
                }
                //回滚到本分支上一次commit 命令：git reset
-               else if(in.equals("git reset")){
+               else if(Pattern.matches("git\\s*reset\\s*",in)){
                    wareHouse.rollBack();
                }
-               else if(in.equals("git log")){
+               //查看log
+               else if(Pattern.matches("git\\s*log\\s*",in)){
                    wareHouse.viewLog();
                }
-               else if(Pattern.matches("git reset --soft .*",in)){
-                   Pattern r = Pattern.compile("git reset --soft (.*)");
+               //根据commit id 回滚分支
+               else if(Pattern.matches("git\\s*reset\\s*--soft\\s*(\\w.*)",in)){
+                   Pattern r = Pattern.compile("git\\s*reset\\s*--soft\\s*(\\w.*)");
                    Matcher m = r.matcher(in);
                    m.find();
                    wareHouse.reset(m.group(1));

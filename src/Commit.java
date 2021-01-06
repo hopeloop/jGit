@@ -43,7 +43,7 @@ public class Commit extends ObjectStore{
         timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time);
     }
 
-    //将当前分支的commit key更新
+    //更新当前分支的head
     private void updateCommitKey() throws Exception {
         //以覆盖的方式向文件中写入最新Commit的key
         writeIn(curr_branch,new StringBuilder(latestCommitKey),headsPath,false);
