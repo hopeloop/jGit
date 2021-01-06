@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.Scanner;
 
 public class TestJGit {
     public static void main(String args[]) {
@@ -11,8 +12,12 @@ public class TestJGit {
             // 初始化仓库
             jGit.init();
 
+            //测试add方法
+            Scanner input =new Scanner(System.in);
+            jGit.add(input.nextLine());
+
             //测试commit
-            jGit.commit("第一次commit");   //结果：4f30cfbc82c9fca11f6222d4b6bfc434422c415 第一次commit
+//            jGit.commit("第一次commit");   //结果：4f30cfbc82c9fca11f6222d4b6bfc434422c415 第一次commit
 //            File file =new File(path+File.separator+"toDe");
 //            file.delete();
 //            //测试commit有无变化

@@ -5,8 +5,10 @@ public class jGit {
     public static String repoPath; // 待管理项目的路径
     public static Branch branch; // 分支对象
     public static String committer;// 提交者
+    public static String jGitPath;
 
     public jGit(String repoPath) {
+        this.jGitPath=repoPath+File.separator+"jGit";
         this.repoPath = repoPath;
         // 初始分支为master
         branch = new Branch(repoPath, "master");
@@ -80,6 +82,27 @@ public class jGit {
             System.out.println("Author:"+arr[3]);
             System.out.println("Date:"+arr[4]+" "+arr[5]+"\n");
             System.out.println(arr[6]);
+        }
+    }
+
+    // add操作，入参是相对路径
+    public static void add(String addPath) throws Exception {
+        File file = new File(repoPath + File.separator + addPath);
+        if(file.isFile()){
+            Blob b = new Blob(file.getPath().replace(repoPath+File.separator,""));
+            String[] v = b.toString().split(" ");
+            String value = v[1]+" "+v[2];
+            ObjectStore.writeIn("index",new StringBuilder(value),jGitPath,true);
+            System.out.println("已更新到index:"+v);
+        }
+        else{
+            File[] files = file.listFiles();
+            for(File f:files){
+                Blob b = new Blob(f.getPath().replace(repoPath+File.separator,""));
+                String value = b.getKey()+" "+f.getPath().replace(repoPath+File.separator,"")+"\n";
+                ObjectStore.writeIn("index",new StringBuilder(value),jGitPath,true);
+                System.out.println("已更新到index:"+value);
+            }
         }
     }
 

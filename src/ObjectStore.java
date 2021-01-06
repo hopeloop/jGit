@@ -141,7 +141,7 @@ public class ObjectStore {
     }
 
     //传入文件名，value,存储地址，和是否append,生成文件
-    protected void writeIn(String FileName,StringBuilder value,String savePath,boolean append) throws IOException {
+    protected static void writeIn(String FileName, StringBuilder value, String savePath, boolean append) throws IOException {
         File file = new File(savePath+File.separator+FileName);
         if(!file.exists()){
             file.createNewFile();
