@@ -99,7 +99,48 @@
 
 #### **1.ObjectStore**
 
++ 主要功能：
 
+  + **复制文件内容**
+
+    描述：将一个文件的所有内容复制到另一个文件
+
+    方法：copyFile(File source, File target)
+
+    入参：源文件对象，目标文件对象
+
+    实现：
+
+    1. 创建源文件的文件输入流，创建目标文件的文件输出流
+    2. 循环将字节从输入流读出，并写入输出流，直到文件内容读完
+    3. 判断目标文件是否存在，不存在则创建文件
+
+  + **生成object文件**
+
+    描述：在objects文件夹下创建blob和tree对应的key-value文件
+
+    方法：createFile(String targetSubPath)
+
+    入参：要生成blob的文件的相对路径 or 要生成tree的文件夹的相对路径
+
+    实现：
+
+    1. 判断当前ObjectStore对象的类型是blob还是tree
+
+    2. 创建文件
+
+       + type为blob
+
+         + 获取要记录的文件的内容hash值，作为blob文件的文件名
+         + 调用copyFile()方法将要记录文件的内容复制到blob文件，并创建blob文件
+
+       + type为tree
+
+         + 深度遍历仓库根目录，将根目录记录为blob、tree
+           + 对于每一个File对象，是文件则调用Blob类的构造函数将其生成为blob对象，是文件夹则调用Tree类的构造函数将其生成为tree对象
+           + 获得生成对象的type、key、对应的文件或文件夹名称，整理为一条记录写为tree文件的一行
+
+         + 计算tree文件内容的hash值，将其记录为当前tree对象的key，并将文件重新命名为key
 
 #### **2.Hash**
 
@@ -115,7 +156,83 @@
 
 #### 5.Branch
 
++ 主要功能：
 
+  + **新建分支**
+
+    描述：以当前分支为基础生成一个新分支，不自动切换到该分支，新分支获得和当前分支一样的commit和log
+
+    方法：newBranch(String branchName)
+
+    入参：新分支名称
+
+    实现：
+
+    1. 先判断新生成分支是否已经存在，存在则不新建，否则开始建新分支；
+
+    2. 建新分支
+       + 生成新分支的log文件（复制当前分支的log文件）
+       + 生成新分支的head文件（复制当前分支的head文件）
+
+  + **切换版本**
+
+    描述：将仓库状态还原为指定commit记录
+
+    方法：changeWareHouse(String commitId)
+
+    入参：要回到的commitId
+
+    实现：
+
+    1. 根据commitId获得对应的treeId，并找到tree文件，如果成功找到tree文件则开始切换
+    2. 切换版本
+       + 清空当前仓库（jGit文件夹除外）
+       + 读取tree文件记录，将其中的blob记录还原为文件，tree记录还原为文件夹
+       + 修改当前分支的head文件，指向切换到的commit
+
+  + **回滚**
+
+    描述：将仓库状态还原为当前分支的head的parent提交记录
+
+    方法：rollBack()
+
+    入参：无
+
+    实现：
+
+    1. 获得当前分支head的parent的commitId
+    2. 调用切换版本的changeWareHouse()方法，让仓库回到前一步得到的commitId的状态
+
+  + **切换分支**
+
+    描述：以当前分支为基础生成一个新分支，不自动切换到该分支，新分支获得和当前分支一样的commit和log
+
+    方法：switchBranch(String theBranch) 
+
+    入参：要切换到的分支名称
+
+    实现：
+
+    1. 判断要切换到的分支是否存在，存在则开始切换
+    2. 修改分支相关的文件和参数
+       + 修改当前分支变量
+       + 修改HEAD文件指向当前分支的head文件
+
+    3. 获得切换到的分支的head commit
+    4. 调用切换版本的changeWareHouse()方法，让仓库变为切换到的分支的head commit的记录
+
+  + **显示分支**
+
+    描述：命令行输出本地的所有分支，当前分支标*
+
+    方法：showBranches()
+
+    入参：无
+
+    实现：
+
+    1. 遍历heads文件夹，打印文件名（即分支名）
+    2. 判断文件名和当前分支名是否相同，相同则在文件名后打印*
 
 #### **6.Commit**
 
@@ -163,7 +280,61 @@
 
 #### 8.jGit
 
-- 
+- 主要功能
+
+  + **初始化仓库**
+
+    方法：init()
+
+    入参：无
+
+    实现：
+
+    1. 判断jGit仓库是否存在，不存在则开始初始化仓库
+    2. 创建jGit仓库目录，包括jGit、heads、logs文件夹等
+    3. 新建master分支，并生成该分支的head文件
+    4. 生成HEAD文件，保存master分支的head文件地址
+
+  + **新建分支**
+
+    方法：newBranch(String newBranch)
+
+    入参：新分支名称
+
+    实现：调用Branch类的newBranch()方法
+
+  + **切换分支**
+
+    方法：switchBranch(String theBranch)
+
+    入参：要切换到的分支名称
+
+    实现：调用Branch类的switchBranch()方法
+
+  + **显示分支**
+
+    方法：showBranches()
+
+    入参：无
+
+    实现：调用Branch类的showBranches()方法
+
+  + **分支回滚**
+
+    方法：rollBack()
+
+    入参：无
+
+    实现：调用Branch类的rollBack()方法
+
+  + **回到分支上的指定commit**
+
+    方法：reset()
+
+    入参：无
+
+    实现：调用Branch类的changeWareHouse()方法
+
 - viewLog，读取当前分支对应的log文件，以一行（一次Commit）为一个元素存放在ArrayList中，从后往前读数组（最近的Commit先显示），并进行格式化输出。
 
 ## 每周任务

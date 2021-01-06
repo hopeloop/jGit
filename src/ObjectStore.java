@@ -154,8 +154,8 @@ public class ObjectStore {
 
     // 将source文件内容全部复制到target文件
     protected void copyFile(File source, File target) throws IOException {
-        FileInputStream fis = new FileInputStream(source); // 新建content的输入流
-        FileOutputStream fos = new FileOutputStream(target);  // 新建blob的输出流
+        FileInputStream fis = new FileInputStream(source); // 新建source的输入流
+        FileOutputStream fos = new FileOutputStream(target);  // 新建target的输出流
         int len = 0;
         byte[] buf = new byte[1024];
         while ((len = fis.read(buf)) != -1)
