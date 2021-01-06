@@ -78,9 +78,7 @@ public class Branch {
             return false;
 
         // 还原上一个commit的仓库状态
-        clearOldFiles(); // 先清空已有文件
         changeWareHouse(lastCommit); // 还原上一次commit的文件状态
-        editBranchHead(lastCommit); // 修改Head文件指向上一次commit
         return true;
     }
 
@@ -191,9 +189,12 @@ public class Branch {
     }
 
     // 仓库状态回到指定的commit
-    public void changeWareHouse(String commitId) throws Exception {
+    public boolean changeWareHouse(String commitId) throws Exception {
         String treeId = getTree(commitId); // 获得commit对应的tree
+        clearOldFiles(); // 先清空已有文件
         recoverWithTree(treeId, repoPath); // 读取上次提交对应的tree，恢复文件(夹)
+        editBranchHead(commitId); // 修改head文件指向当前的commit
+        return true;
     }
 
     // 恢复tree对应的仓库状态，入参为tree的id和tree对应的目录路径
