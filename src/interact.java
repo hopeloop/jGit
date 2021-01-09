@@ -52,8 +52,8 @@ public class interact {
                    wareHouse.viewLog();
                }
                //根据commit id 回滚分支
-               else if(Pattern.matches("git\\s*reset\\s*--soft\\s*(\\w.*)",in)){
-                   Pattern r = Pattern.compile("git\\s*reset\\s*--soft\\s*(\\w.*)");
+               else if(Pattern.matches("git\\s*reset\\s*(\\w.*)",in)){
+                   Pattern r = Pattern.compile("git\\s*reset\\s*(\\w.*)");
                    Matcher m = r.matcher(in);
                    m.find();
                    wareHouse.reset(m.group(1));

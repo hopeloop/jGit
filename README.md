@@ -1,6 +1,6 @@
 # Java课程项目
 
-此项目为java第24组的课程项，拟用java实现部分git命令的版本控制工具
+此项目为java第24组的课程项目，拟用java实现部分git命令的版本控制工具
 
 ## 课程项目要求
 
@@ -21,9 +21,11 @@
 
 6. git reset: 回滚到本分支上一次commit
 
-7. git rest commit Id: 切换到任意commit
+7. git reset commit Id: 切换到任意commit
 
 8. git log: 查看log
+
+9. git add path: 添加到暂存区（暂时未加入命令行指令交互）
 
    
 
@@ -178,13 +180,15 @@
   getValue(String key): File
   getValue_inLines(String filePath): String //传入文件地址，获取文件Value
   getValue_inLines_from_File(File file): String ////传入文件，获取文件Value
-  writeIn(String FileName,StringBuilder value,String savePath,boolean append): void // //传入文件名，value,存储地址，和是否append,生成文件
+  writeIn(String FileName,StringBuilder value,String savePath,boolean append): void // //传入文件名，value,存储地址，是否append,生成文件
   copyFile(File source, File target): void //将source文件内容全部复制到target文件
   ```
 
   
 
 #### **2.Hash**
+
+​	传入待哈希内容（文件地址/File对象/StringBuilder对象）构造Hash对象，用getHashCode()方法取出Hash值
 
 - 数据域
 
@@ -199,7 +203,7 @@
   ```java
   Hash(String resourceFilePath) //构造对象，参数：源文件地址
   Hash(File file) //构造对象，参数：输入源文件
-  Hash(StringBuilder value)
+  Hash(StringBuilder value)//构造对象
   SHA1Checksum() //获取源文件hash值
   getHashcode() //获取源文件hash值
   ```
@@ -208,22 +212,26 @@
 
 #### **3.Blob**
 
+​	传入源文件地址，构建新Blob对象。
+
 - 方法
 
   ```java
   Blob(String blobPath) //构造Blob
-  toString()
+  toString()//生成形如："Blob <hashcode> <file_name>"的字符串
   ```
 
   
 
 #### **4.Tree**
 
+​	传入源文件地址，构建新Tree对象。
+
 - 方法
 
   ```java
   Tree(String treepath) //构造tree
-  +toString()
+  +toString()//生成形如"Tree <hashcode> <dir_name>"的字符串
   ```
 
   
@@ -383,7 +391,7 @@
   latestTreeKey:String //当前根目录的tree key
   lastCommitKey:String //上一次的commit id
   latestCommitKey:String  //本次的commit id
-  lcommitter:String
+  committer:String
   curr_branch:String
   ```
 
@@ -392,7 +400,7 @@
 - 方法
 
   ```java
-  Commit(String message) //构造Commit类，需要传入参数 commit message
+  Commit(String message) //构造Commit对象，需要传入参数 commit message
   doTimeStamp(): void //生成TimeStamp
   updateCommitKey(): void //更新当前分支的head
   isCommitable(): boolean //判断根目录与上一次commit的根目录相对比有无变化
@@ -415,6 +423,8 @@
   
 
 #### 8.jGit
+
+​	jGit的所有功能均封装在此类。
 
 - 主要功能
 
@@ -478,6 +488,14 @@
     入参：无
 
     实现：读取当前分支对应的log文件，以一行（一次Commit）为一个元素存放在ArrayList中，从后往前读数组（最近的Commit先显示）
+    
+  - **加入暂存区**
+
+    方法：add()
+
+    入参：文件或文件夹的相对地址
+
+    实现：将path传入ObjectStore类createFile()方法，生成对应的blob；修改index文件内容
 
 - 数据域
 
@@ -501,11 +519,10 @@
   rollBack(): void //回滚到上一分支
   reset(String commitId): void
   viewLog(): void
+  add(String addpath):void //传入相对地址
   ```
 
-
-
-### git add：
+### git add与暂存区：
 
 #### git add：
 
@@ -536,7 +553,7 @@ git add，将文件生成Blob，并添加到暂存区(Staging Area)，即更新i
 
 `git commit`:
 
- 1.根据index内容生成树，获取treekey
+ 1.将index指向的所有Blob串起来生成树，获取treekey
 
  2.按原commit类方法生成commit，更新branch head
 
